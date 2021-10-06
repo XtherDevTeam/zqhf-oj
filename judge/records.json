@@ -1,0 +1,13 @@
+{
+    "description": "\u8bb0\u5f55",
+    "records": [
+        [
+            "Accepted",
+            "stdout >\nHello,world!\n\nstderr >\n\n"
+        ],
+        [
+            "Accepted",
+            "stdout >\nHello,world!\n\nstderr >\n\n"
+        ]
+    ]
+}

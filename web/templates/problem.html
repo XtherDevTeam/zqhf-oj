@@ -1,0 +1,30 @@
+<br><br><br>
+<div class="container" style="margin: 0 auto;">
+    <br>
+    <h2>{{problem["name"]}}</h2>
+    <br>
+    <h4>题目介绍</h4>
+    {{problem["description"]|safe}}<br><br>
+    <h4>样例</h4>
+    {% if example_count == 0 %}
+    无<br>
+    {% endif %}
+    {% for i in range(example_count) %}
+    <h6>样例{{i+1}}·输入</h6>
+    <code>
+    {% if problem["input_example"][i] == "" %}
+    无
+    {% endif %}
+    {{problem["input_example"][i]|safe}}
+    </code><br>
+    <h6>样例{{i+1}}·输出</h6>
+    <code>
+    {% if problem["output_example"][i] == "" %}
+    无
+    {% endif %}
+    {{problem["output_example"][i]|safe}}
+    </code><br><br>
+    {% endfor %}
+    <br>
+</div>
+<br><br>

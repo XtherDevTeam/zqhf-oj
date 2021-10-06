@@ -1,0 +1,104 @@
+<br><br><br>
+<div class="container" style="margin: 0 auto;">
+    <br>
+    {% if origin == None %}
+    <h2>创建题目</h2>
+    {% else %}
+    <h2>修改题目</h2>
+    {% endif %}
+    <br>
+    <h4>题目标题</h4>
+    <input id="title" name="title" type="text" class="form-control" value="" aria-describedby="basic-addon1"><br>
+    <h4>题目解释</h4>
+    <input id="description" name="description" type="text" class="form-control" value="" aria-describedby="basic-addon1"><br>
+    <h4>标签</h4>(以列表格式输入:例如["入门","CSP-J 2021"])<br>
+    <input id="tags" name="tags" type="text" class="form-control" value="" aria-describedby="basic-addon1"><br>
+    <h4>样例输入</h4>(以json格式录入)<br>
+    <textarea id="eg_in" name="eg_in"></textarea><br>
+    <h4>样例输出</h4>(以json格式录入)<br>
+    <textarea id="eg_out" name="eg_out"></textarea><br>
+    <h4>输入</h4>(评测端目前只支持单输入文件)<br>
+    <textarea id="input" name="input"></textarea><br>
+    <h4>输出</h4>(评测端目前只支持单输出文件)<br>
+    <textarea id="output" name="output"></textarea><br>
+    <a class="btn btn-primary" href="javascript:void(0);" onclick="submit();">上传</a>
+    <br>
+    <br>
+</div>
+<br>
+<script>
+var eg_in_edit = CodeMirror.fromTextArea(document.getElementById("eg_in"), {
+    mode: 'application/json',
+    lineNumbers: true
+});
+var eg_out_edit = CodeMirror.fromTextArea(document.getElementById("eg_out"), {
+    mode: 'application/json',
+    lineNumbers: true
+});
+var input_edit = CodeMirror.fromTextArea(document.getElementById("input"), {
+    mode: 'text/txt',
+    lineNumbers: true
+});
+var output_edit = CodeMirror.fromTextArea(document.getElementById("output"), {
+    mode: 'text/txt',
+    lineNumbers: true
+});
+
+{% if origin != None %}
+document.getElementById('title').value = '{{origin["name"]}}';
+document.getElementById('description').value = '{{origin["description"|safe]}}';
+document.getElementById('tags').value = '{{tags|safe}}';
+eg_in_edit.setValue( decodeURI('{{input_examples|safe}}') );
+eg_out_edit.setValue( decodeURI('{{output_examples|safe}}') );
+input_edit.setValue( decodeURI("{{judge_file[0]}}") )
+output_edit.setValue( decodeURI("{{judge_file[1]}}") )
+{% endif %}
+
+function submit() {
+    eg_in = JSON.parse(eg_in_edit.getValue());
+    eg_out = JSON.parse(eg_out_edit.getValue());
+    judge_input = input_edit.getValue();
+    judge_out = output_edit.getValue();
+    tags = JSON.parse(document.getElementById('tags').value);
+    //$http.post('/api?request=updateUserSpace', { 'description':description,'introduction':introduction });
+    {% if origin != None %}
+    $.post('/api?request=editProblem',
+        {
+            "action":"{{problem_id}}",
+            "problem_json": JSON.stringify({
+            "info": {
+                'name': document.getElementById('title').value,
+                'description': document.getElementById('description').value,
+                'tags': tags,
+                "input_example": eg_in,
+                "output_example": eg_out,
+            },
+            "input": judge_input,
+            "output": judge_out
+        })
+        },function (){
+        alert('success');
+        window.location = '/problems';
+    },'json')
+    {% else %}
+    $.post('/api?request=postProblem',
+        {
+            "action":"upload",
+            "problem_json": JSON.stringify({
+            "info": {
+                'name': document.getElementById('title').value,
+                'description': document.getElementById('description').value,
+                'tags': tags,
+                "input_example": eg_in,
+                "output_example": eg_out,
+            },
+            "input": judge_input,
+            "output": judge_out
+        })
+        },function (){
+        alert('success');
+        window.location = '/problems';
+    },'json')
+    {% endif %}
+}
+</script>

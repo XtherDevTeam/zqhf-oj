@@ -1,4 +1,4 @@
-import os,sys,json,hashlib,time
+import os,sys,json,hashlib,time,demjson
 
 data = {}
 
@@ -8,11 +8,12 @@ def open_users_file():
         data = json.loads(file.read())
 
 def sync_users_file():
-    with open("config/users.json",'r+') as file:
+    print(data)
+    with open("config/users.json",'w+') as file:
         file.write(json.dumps(data))
 
 def get_user_item(username:str):
-    print(data)
+    #print(data)
     return data.get(username)
 
 def check_user(username:str,password:str):

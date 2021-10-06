@@ -1,10 +1,13 @@
 <br><br><br>
 <div class="container">
     <br>
-    Username: <input id="username" name="username" type="text" class="form-control" placeholder="" aria-describedby="basic-addon1"><br>
-    Description: <input id="description" name="description" type="text" class="form-control" placeholder="" aria-describedby="basic-addon1"><br>
-    Introduction:<br><textarea id="introduction" name="introduction" rows="1" style="width: 95%;"></textarea>
-    <br><br>
+    用户名: <input id="username" disabled name="username" type="text" class="form-control" placeholder="" aria-describedby="basic-addon1"><br>
+    个人介绍(较短): <input id="description" name="description" type="text" class="form-control" placeholder="" aria-describedby="basic-addon1"><br>
+    介绍(可用HTML):<br><textarea id="introduction" name="introduction" rows="1" style="width: 95%;"></textarea>
+    <br>
+    <a class="btn btn-primary" href="javascript:void(0);" onclick="submit();">修改</a>
+    <br>
+    <br>
 </div>
 
 <script>
@@ -12,4 +15,18 @@ var editor = CodeMirror.fromTextArea(document.getElementById("introduction"), {
     mode: 'text/html',
     lineNumbers: true
 });
+
+function submit() {
+    description = document.getElementById('description').value;
+    introduction = encodeURI(editor.getValue());
+    //$http.post('/api?request=updateUserSpace', { 'description':description,'introduction':introduction });
+    $.post('/api?request=updateUserSpace',{ 'description':description,'introduction':introduction },function (){
+        alert('success');
+        window.location = window.location;
+    },'json')
+}
+
+document.getElementById('username').value = "{{user['name']}}";
+document.getElementById('description').value = "{{user['item']['descriptions']['description']}}";
+editor.setValue(decodeURI("{{user['item']['descriptions']['introduction']|safe}}"));
 </script>

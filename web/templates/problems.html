@@ -1,0 +1,81 @@
+<br><br><br>
+<div class="container" style="margin: 0 auto;">
+    <br>
+    <div id="liveAlertPlaceholder"></div>
+    <h2>题目列表: 第{{ now_index }} / {{ total_index }}页</h2>
+    <br>
+    <div class="btn-group" role="group">
+        <button type="button" class="btn btn-primary" onclick="new_problem()">创建题目</button>
+    </div>
+    <br>
+    <table class="table" style="width: 100%; table-layout: fixed; word-break: break-all;white-space: nowrap;">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Tags</th>
+                {% if user['item']['premission'] == 0 %}
+                <th>Actions</th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for i in problems%}
+            <tr>
+                <td><a href="/problems/{{problems.index(i)}}">{{i['name']}}</a></td>
+                <td>{{i['tags']}}</td>
+                {% if user['item']['premission'] == 0 %}
+                <td>
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-primary" onclick="remove_problem('{{problems.index(i)}}')">删除</button>
+                        <button type="button" class="btn btn-primary" onclick="edit_problem('{{problems.index(i)}}')">编辑</button>
+                    </div>
+                </td>
+                {% endif %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <center>
+    {% if now_index != 0 %}
+    <a href="/problems?index={{now_index - 1}}">Preview</a>·
+    {% else %}
+    Preview·
+    {% endif %}
+    {% for i in range(now_index,now_index + 30) %}
+    {% if i > total_index %}
+    {{i}}·
+    {% else %}
+    <a href="/problems?index={{i}}">{{i}}</a>·
+    {% endif %}
+    {% endfor %}
+    {% if now_index != total_index %}
+    <a href="/problems?index={{now_index + 1}}">Next</a>
+    {% else %}
+    Next
+    {% endif %}
+    </center>
+    <br>
+</div>
+
+<script>
+var alertPlaceholder = document.getElementById('liveAlertPlaceholder')
+function alert(message, type) {
+    var wrapper = document.createElement('div')
+    wrapper.innerHTML = '<div class="alert alert-' + type + ' alert-dismissible" role="alert">' + message + '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>'    
+    alertPlaceholder.append(wrapper)
+}
+function remove_problem(pid) {
+    let xmlhttp = new XMLHttpRequest('GET','/api?request=remove_problem&pid=' + pid,0);
+    xmlhttp.send();
+    if(JSON.parse(xmlhttp.responseText)["status"] != "success"){
+        alert(JSON.parse(xmlhttp.responseText)["reason"],"danger");
+    }
+    window.location = window.location;
+}
+function edit_problem(pid) {
+    window.location = '/problems/edit?pid=' + pid;
+}
+function new_problem() {
+    window.location = '/problems/post';
+}
+</script>

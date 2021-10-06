@@ -6,6 +6,7 @@
     <h6>Join time: {{ user['item']['descriptions']['join-time'] }}</h6>
     <br>
     <div class="introduction">
-    {{ user['item']['descriptions']['introduction'] }}
+    {{ introduction|safe }}
     </div>
+    <br>
 </div>

@@ -3,7 +3,7 @@ import os,sys,json
 configf = {}
 
 def sync_config_file():
-    with open('config/config.json','r+') as file:
+    with open('config/config.json','w+') as file:
         file.write( json.dumps(configf) )
 
 def open_config_file():
