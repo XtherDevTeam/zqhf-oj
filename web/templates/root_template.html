@@ -1,11 +1,26 @@
 <!doctype html>
 <html>
 <head>
+    <link href="https://cdn.bootcdn.net/ajax/libs/codemirror/2.33.0/codemirror.css" rel="stylesheet">
+    <script src="https://cdn.bootcdn.net/ajax/libs/codemirror/2.33.0/codemirror.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+    <link href="/static/main_sheet.css" rel="stylesheet" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
     <title>{{action}}·{{config_file['server-name']}}</title>
 </head>
-<body>
+<script>
+function logout() {
+    let xmlhttp = new XMLHttpRequest();
+    xmlhttp.open( 'GET','/api?request=logout' , 0 );
+    xmlhttp.send();
+    if(JSON.parse(xmlhttp.responseText)['status'] == 'error'){
+        alert(JSON.parse(xmlhttp.responseText)['reason']);
+    }else{
+        window.location = '/';
+    }
+}
+</script>
+<body style="background-image: url('//api.timecdn.cn/libs/wallpaper/v1'); background-size: cover; background-attachment: fixed; width: 100%; height: 100%;">
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container-fluid">
           <a class="navbar-brand" href="#">{{config_file['server-name']}}</a>
@@ -33,8 +48,11 @@
                   {{ user['name'] }}
                 </a>
                 <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                  <li><a class="dropdown-item" href="/manage">管理</a></li>
-                  <li><a class="dropdown-item" href="/logout">登出</a></li>
+                  {% if user['item']['premission'] == 0 %}
+                  <li><a class="dropdown-item" href="/manage">服务器管理</a></li>
+                  {% endif %}
+                  <li><a class="dropdown-item" href="/user/self">用户设置</a></li>
+                  <li><a class="dropdown-item" href="javascript:void(0);" onclick="logout()">登出</a></li>
                 </ul>
               </li>
               {% endif %}
@@ -46,6 +64,6 @@
           </div>
         </div>
     </nav>
-{{render_text}}
+    {{render_text}}
 </body>
 </html>

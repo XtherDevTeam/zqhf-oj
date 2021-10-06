@@ -1,0 +1,49 @@
+<br><br><br>
+<div class="container" style="margin: 0 auto;">
+    <br>
+    <div id="liveAlertPlaceholder">
+        {% if reason != None %}
+        <div class="alert alert-danger alert-dismissible" role="alert">{{reason}}<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>
+        {% endif %}
+    </div>
+    <center>
+    <h2>登录</h2>
+    </center>
+    <div style="width: 50%;margin: 0 auto;">
+        <div class="input-group">
+            <span class="input-group-text" id="sizing-addon1">Username</span>
+            <input id="username" name="username" type="text" class="form-control" placeholder="" aria-describedby="basic-addon1">
+        </div>
+        <br>
+        <div class="input-group">
+            <span class="input-group-text" id="sizing-addon2">Password</span>
+            <input id="password" name="password" type="password" class="form-control" placeholder="" aria-describedby="basic-addon1">
+        </div><br>
+    </div>
+    <center><a class="btn btn-primary" href="javascript:void(0);" onclick="submit();">Submit</a></center><br>
+    <center>Doesn't have account?Click <a href="/signup">here</a> to sign up.<br></center>
+    <br>
+</div>
+
+<script>
+    var alertPlaceholder = document.getElementById('liveAlertPlaceholder')
+    function alert(message, type) {
+      var wrapper = document.createElement('div')
+      wrapper.innerHTML = '<div class="alert alert-' + type + ' alert-dismissible" role="alert">' + message + '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>'
+    
+      alertPlaceholder.append(wrapper)
+    }
+    function submit() {
+        username = document.getElementById('username').value;
+        password = document.getElementById('password').value;
+        let xmlhttp = new XMLHttpRequest();
+        xmlhttp.open( 'GET','/api?request=login&usr=' + username + '&pwd=' + password , 0 );
+        xmlhttp.send();
+        if(JSON.parse(xmlhttp.responseText)['status'] == 'error'){
+            alert(JSON.parse(xmlhttp.responseText)['reason'],'danger');
+        }else{
+            window.location = '/';
+        }
+    }
+    </script>
+    

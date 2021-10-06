@@ -1,0 +1,15 @@
+<br><br><br>
+<div class="container">
+    <br>
+    Username: <input id="username" name="username" type="text" class="form-control" placeholder="" aria-describedby="basic-addon1"><br>
+    Description: <input id="description" name="description" type="text" class="form-control" placeholder="" aria-describedby="basic-addon1"><br>
+    Introduction:<br><textarea id="introduction" name="introduction" rows="1" style="width: 95%;"></textarea>
+    <br><br>
+</div>
+
+<script>
+var editor = CodeMirror.fromTextArea(document.getElementById("introduction"), {
+    mode: 'text/html',
+    lineNumbers: true
+});
+</script>
