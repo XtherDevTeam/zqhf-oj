@@ -1,0 +1,5 @@
+{
+    "name": "C++",
+    "descriptions": "G++ Compiler with C++98",
+    "exec_command": "g++ -std=c++98 $source_file -o $binary_file;$binary_file;"
+}

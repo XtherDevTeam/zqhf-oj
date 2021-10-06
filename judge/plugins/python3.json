@@ -1,0 +1,5 @@
+{
+    "name": "Python3",
+    "descriptions": "Execute Python3 script",
+    "exec_command": "python3 $source_file"
+}

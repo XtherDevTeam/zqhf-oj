@@ -1,0 +1,51 @@
+<!doctype html>
+<html>
+<head>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+    <title>{{action}}·{{config_file['server-name']}}</title>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container-fluid">
+          <a class="navbar-brand" href="#">{{config_file['server-name']}}</a>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+              <li class="nav-item">
+                <a class="nav-link active" aria-current="page" href="/">主页</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/problems">题库</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/lists">题单</a>
+              </li>
+              {% if is_logined == False %}
+              <li class="nav-item">
+                <a class="nav-link" href="/login">登入</a>
+              </li>
+              {% else %}
+              <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="/user/{{ user['name'] }}" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  {{ user['name'] }}
+                </a>
+                <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                  <li><a class="dropdown-item" href="/manage">管理</a></li>
+                  <li><a class="dropdown-item" href="/logout">登出</a></li>
+                </ul>
+              </li>
+              {% endif %}
+            </ul>
+            <form class="d-flex">
+              <input class="form-control me-2" id="fast-goto" type="search" placeholder="在这里输入题号跳转" aria-label="Search">
+              <button class="btn btn-outline-success" onclick="fastgoto()">Go</button>
+            </form>
+          </div>
+        </div>
+    </nav>
+{{render_text}}
+</body>
+</html>

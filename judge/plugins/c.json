@@ -1,0 +1,5 @@
+{
+    "name": "C",
+    "descriptions": "GCC Compiler",
+    "exec_command": "gcc $source_file -o $binary_file;$binary_file;"
+}
