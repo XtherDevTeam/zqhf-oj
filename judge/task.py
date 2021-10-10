@@ -1,4 +1,5 @@
 import multiprocessing as mp
+import os
 from sys import stdout
 import judge.plugins,judge.records
 
@@ -8,40 +9,54 @@ full_stdout = ['']
 status_queue_prefix = 0
 q = mp.Queue()
 
-def push_task(use_plugin:str,input:str,output:str,source:str,binary:str):
-    q.put( [ use_plugin, input, source, binary, output ] )
-    status.append( 'waiting' )
-    full_stdout.append( '' )
-    print(q)
-    return len(status) - 1
+def push_task(use_plugin:str,input:str,output:str,source:str,binary:str,author:str,pid:str):
+    q.put( [ use_plugin, input, source, binary, output,author,pid ] )
+    print('task pushed->',q)
+    return judge.records.get_record_count()
 
 def task_processor(queue:mp.Queue):
     print('start',queue)
     judge.plugins.load_plugins_list()
     while True:
-        global status_queue_prefix
-        while queue.empty():
-            continue
-        print('Are you sure?',status_queue_prefix)
-        now_item = queue.get()
-        status[status_queue_prefix] = 'compiling'
-        execute_result = judge.plugins.execute_plugin(now_item[0],now_item[1], { 'source_file':now_item[2],'binary_file':now_item[3] })
-        if execute_result[0] == 'ERR':
-            status[status_queue_prefix] = 'Compile Error or Runtime Error'
-        elif execute_result[0] == 'TLE':
-            status[status_queue_prefix] = 'Time Limit Exceed'
-        else:
-            # 去除末尾多余字符
-            while execute_result[1][-1] == '\n' or execute_result[1][-1] == ' ':
-                execute_result[1] = execute_result[1][0:-1]
-            for i in range(len(now_item[1])):
-                if(execute_result[1][i] != now_item[1][i]):
-                    status[status_queue_prefix] = 'Wrong Answer at character ' + str(i)
-                    break
-            if status[status_queue_prefix] == 'compiling': status[status_queue_prefix] = 'Accepted'
-        full_stdout[status_queue_prefix] = 'stdout >\n' + execute_result[1] + '\n\nstderr >\n' + execute_result[2] + '\n'
-        judge.records.push_record( [status[0],full_stdout[0]] )
-        print(execute_result)
+        try:
+            global status_queue_prefix
+            while queue.empty():
+                continue
+            now_item = queue.get()
+            status[status_queue_prefix] = 'compiling'
+            execute_result = judge.plugins.execute_plugin(now_item[0],now_item[1], { 'source_file':now_item[2],'binary_file':now_item[3] })
+            try:
+                os.remove('./tmp/' + now_item[2])
+                os.remove('./tmp/' + now_item[3])
+            except Exception:
+                pass
+            if execute_result[0] == 'CE':
+                status[status_queue_prefix] = 'Compile Error'
+            elif execute_result[0] == 'RE':
+                status[status_queue_prefix] = 'Runtime Error'
+            elif execute_result[0] == 'TLE':
+                status[status_queue_prefix] = 'Time Limit Exceed'
+            else:
+                # 去除末尾多余字符
+                while execute_result[1][-1] == '\n' or execute_result[1][-1] == ' ':
+                    execute_result[1] = execute_result[1][0:-1]
+                while now_item[4][-1] == '\n' or now_item[4][-1] == ' ':
+                    now_item[4] = now_item[4][0:-1]
+                if len(execute_result[1]) != len(now_item[4]):
+                    print(execute_result[1],'\n',now_item[4])
+                    status[status_queue_prefix] = 'Wrong Answer at character -' + str(len(execute_result[1])) + ' of ' + str(len(now_item[4]))
+                else:
+                    for i in range(len(now_item[4])-1):
+                        if(execute_result[1][i] != now_item[4][i]):
+                            status[status_queue_prefix] = 'Wrong Answer at character ' + str(i)
+                            break
+                if status[status_queue_prefix] == 'compiling': status[status_queue_prefix] = 'Accepted'
+            full_stdout[status_queue_prefix] = 'stdout >\n' + execute_result[1] + '\n\nstderr >\n' + execute_result[2] + '\n\n' + 'returncode >\n' + str(execute_result[3]) + '\n'
+            judge.records.push_record( [status[0],full_stdout[0],now_item[5],now_item[6]] )
+            print(execute_result)
+        except Exception as e:
+            print(str(e))
+            pass
     print('unexpected exit')
 
 def init():
@@ -49,5 +64,4 @@ def init():
     judge.plugins.load_plugins_list()
     process = mp.Process(target=task_processor,args=(q,))
     process.start()
-    push_task("python3","","Hello,world!","test1.py","")
     print(process,q)

@@ -1,0 +1,8 @@
+{
+    "name": "C++",
+    "file-type": "text/x-c++src",
+    "file-ext": "cpp",
+    "descriptions": "G++ Compiler with C++98",
+    "compile_command": "g++ -std=c++98 $source_file -o $binary_file",
+    "exec_command": "./$binary_file"
+}

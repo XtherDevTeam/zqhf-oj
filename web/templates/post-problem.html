@@ -46,7 +46,7 @@ var output_edit = CodeMirror.fromTextArea(document.getElementById("output"), {
 
 {% if origin != None %}
 document.getElementById('title').value = '{{origin["name"]}}';
-document.getElementById('description').value = '{{origin["description"|safe]}}';
+document.getElementById('description').value = decodeURI('{{origin["description"|safe]}}');
 document.getElementById('tags').value = '{{tags|safe}}';
 eg_in_edit.setValue( decodeURI('{{input_examples|safe}}') );
 eg_out_edit.setValue( decodeURI('{{output_examples|safe}}') );

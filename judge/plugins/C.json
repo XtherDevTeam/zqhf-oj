@@ -1,0 +1,8 @@
+{
+    "name": "C",
+    "file-type": "text/x-csrc",
+    "file-ext": "c",
+    "descriptions": "GCC Compiler",
+    "compile_command": "gcc $source_file -o $binary_file",
+    "exec_command": "./$binary_file"
+}

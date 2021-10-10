@@ -1,0 +1,8 @@
+{
+    "name": "C++14",
+    "file-type": "text/x-c++src",
+    "file-ext": "cpp",
+    "descriptions": "G++ Compiler with C++14",
+    "compile_command": "g++ -std=c++14 $source_file -o $binary_file",
+    "exec_command": "./$binary_file"
+}

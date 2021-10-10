@@ -23,8 +23,17 @@
     无
     {% endif %}
     {{problem["output_example"][i]|safe}}
-    </code><br><br>
+    </code><br>
     {% endfor %}
+    {% if logined == True %}
+    <a onclick="goto_post()" class="btn btn-primary">提交答案</a>
+    {% endif %}
+    <br>
     <br>
 </div>
 <br><br>
+<script>
+function goto_post() {
+    window.location += '/post'
+}
+</script>

@@ -1,5 +1,5 @@
 import json
-import os,sys,flask,web.config,web.users,demjson,urllib.parse,judge.problems,judge.task,judge.records
+import os,sys,flask,web.config,web.users,demjson,urllib.parse,judge.problems,judge.task,judge.records,judge.plugins
 from flask.templating import render_template
 
 app = flask.Flask(__name__,static_url_path='/src')
@@ -96,6 +96,26 @@ def index_of_api():
             judge.problems.sync_problems_file()
             judge.problems.createJudgeFile(pid,problem["input"],problem["output"])
             return {'status':'success'}
+        elif(request_item == 'submitAnswer'):
+            content = flask.request.form.get('json')
+            if content == None:
+                return {'status':'error', 'reason': 'invalid json format'}
+            content = json.loads(content)
+            print('submit get',content)
+            io_file = judge.problems.get_judge_file(int(content['pid'])) # 0-> in, 1-> out
+            if io_file == None:
+                return {'status':'error', 'reason': 'problem not exist'}
+            with open('tmp/temp.' + content['ext'],'w+') as file:
+                file.write(content['code'])
+            task_id = judge.task.push_task(
+                content['lang'],urllib.parse.unquote(io_file[0]),
+                urllib.parse.unquote(io_file[1]),
+                'temp.' + content['ext'],
+                'temp.bin',
+                flask.session.get('username'),
+                content['pid']
+            )
+            return {'status':'success', 'task_id': task_id}
 
 @app.route('/login',methods = ["GET"])
 def index_of_login():
@@ -152,6 +172,7 @@ def index_of_user_profile(username:str):
             'space.html',
             config_file = web.config.configf,
             user = { 'name':username, 'item':web.users.get_user_item(username)  },
+            ACedCount = len(web.users.get_user_item(username)['descriptions']['solved-problems']),
             introduction = urllib.parse.unquote(web.users.get_user_item(username)['descriptions']['introduction'])
         )
     )
@@ -235,16 +256,44 @@ def index_of_problem(pid:str):
         judge.problems.get_problem(pid)["name"],
         flask.render_template(
             'problem.html',
+            logined = (flask.session.get('username') != None),
             problem_id = pid,
             problem = judge.problems.get_problem(pid),
             example_count = len(judge.problems.get_problem(pid)["input_example"])
         )
     )
 
+@app.route('/problems/<pid>/post', methods = ["GET"])
+def index_of_post_answer(pid):
+    logined = (flask.session.get('username') != None)
+    if not logined:
+        return flask.redirect('/login?reason=You are not signed in!')
+    pid = int(pid)
+    if pid > judge.problems.get_problems_count():
+        return createRootTemplate(
+            '错误',
+            flask.render_template(
+                'error.html',
+                config_file = web.config.configf,
+                reason = str(pid) + '不是一个有效的题目编号'
+            )
+        )
+    # judge.plugins.load_plugins_list()
+    return createRootTemplate(
+        '提交答案' + judge.problems.get_problem(pid)["name"],
+        flask.render_template(
+            'post-answer.html',
+            problem_id = pid,
+            problem = judge.problems.get_problem(pid),
+            support_lang = judge.plugins.plugins_list,
+            support_lang_json = json.dumps(judge.plugins.plugins_list)
+        )
+    )
+
 @app.route('/judge_status/<id>', methods = ["GET"])
 def index_of_judge_status(id):
     id = int(id)
-    if id >= len(judge.task.status):
+    if id >= judge.records.get_record_count():
         return createRootTemplate(
             '错误',
             flask.render_template(
@@ -265,8 +314,40 @@ def index_of_judge_status(id):
         )
     )
 
+@app.route('/records')
+def index_of_judge_record():
+    prefix = 0
+    if flask.request.args.get('index') != None:
+        prefix = int(flask.request.args.get('index')) * 10
+    records = judge.records.get_records()
+    records.reverse()
+    records_per_page = []
+    for i in range(0,10):
+        if prefix + i >= len(records):
+            continue
+        change = records[prefix + i]
+        real_record_id = len(records) - 1 - i - prefix
+        problem_id = int(records[prefix + i][3])
+        problem_name = judge.problems.get_problem(problem_id)['name']
+        records_per_page.append({
+            'record': change,
+            'problem_id': problem_id,
+            'problem_name': problem_name,
+            'real_record_id': real_record_id
+        })
+
+    return createRootTemplate(
+        '提交记录',
+        flask.render_template(
+            'records.html',
+            config_file = web.config.configf,
+            now_index = int(prefix / 10),
+            total_index = int(len(records) / 10),
+            records = records_per_page
+        )
+    )
+
 def run():
-    web.users.open_users_file()
     web.config.open_config_file()
     judge.problems.open_problems_file()
     judge.task.init()

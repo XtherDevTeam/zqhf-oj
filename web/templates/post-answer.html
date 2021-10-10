@@ -1,0 +1,60 @@
+<br><br><br>
+<div class="container" style="margin: 0 auto;height: 100%;">
+    <br>
+    <h4>提交答案</h4>
+    <br>
+    <ul class="list-group" style="float: left;width: 20%;height: 80%;overflow-y: scroll;background-color: white;">
+        {% for i in support_lang %}
+        <a class="list-group-item" onclick="switchLanguage(&apos;{{i['name']}}&apos;);" href="javascript:void(0);">
+            {{i['name']}}<br>
+            <em>{{i['descriptions']}}</em>
+        </a>
+        {% endfor %}
+    </ul>
+    <br>
+    <textarea id="code-input"></textarea>
+    <a class="btn btn-primary" href="javascript:void(0);" onclick="submit();">上传</a>
+    <br><br><br>
+</div>
+<br>
+
+<script>
+var lang_mode = {{support_lang_json|safe}};
+var cur_lang = 'Python3';
+var input_edit = CodeMirror.fromTextArea(document.getElementById("code-input"), {
+    mode: get_lang_detail(cur_lang)['file-type'],
+    lineNumbers: true
+});
+input_edit.setSize('75%','80%');
+document.getElementsByClassName('CodeMirror')[0].style.top = "-1.5rem";
+function get_lang_detail(lang) {
+    for (let i = 0; i < lang_mode.length; i++) {
+        const element = lang_mode[i];
+        if(element["name"] == lang) return element;
+    }
+    return null;
+}
+function switchLanguage(lang) {
+    cur_lang = lang;
+    detail = get_lang_detail(lang);
+    input_edit.setOption("mode", detail['file-type'])
+    input_edit.setSize('75%','80%');
+    document.getElementsByClassName('CodeMirror')[0].style.top = "-1.5rem";
+}
+function submit() {
+    code = input_edit.getValue();
+    var buildFinal = JSON.stringify({ 'pid':'{{problem_id}}','ext':get_lang_detail(cur_lang)['file-ext'] ,'lang':cur_lang,'code':code });
+    $.post('/api?request=submitAnswer',
+        {'json': buildFinal}
+        ,function (data){
+            console.log(data)
+            // data = JSON.parse(data);
+            if(data['status'] == 'error'){
+                alert('Error: ' + data['reason']);
+            }else{
+                alert('success',data['task_id']);
+                window.location = '/judge_status/' + data['task_id']
+            }
+    },'json')
+}
+</script>

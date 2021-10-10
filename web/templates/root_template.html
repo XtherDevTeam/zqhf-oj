@@ -1,11 +1,12 @@
 <!doctype html>
-<html>
+<html style="height: 100%;">
 <head>
     <link href="/src/codemirror-5.63.1/lib/codemirror.css" rel="stylesheet">
     <script src="/src/codemirror-5.63.1/lib/codemirror.js"></script>
     <script src="/src/codemirror-5.63.1/mode/xml/xml.js"></script>
     <script src="/src/codemirror-5.63.1/mode/python/python.js"></script>
     <script src="/src/codemirror-5.63.1/mode/javascript/javascript.js"></script>
+    <script src="/src/codemirror-5.63.1/mode/clike/clike.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
     <link href="/src/main_sheet.css" rel="stylesheet" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
@@ -24,7 +25,7 @@ function logout() {
     }
 }
 </script>
-<body style="background-image: url('//api.timecdn.cn/libs/wallpaper/v1'); background-size: cover; background-attachment: fixed; width: 100%; height: 100%;">
+<body style="background-size: cover; background-attachment: fixed; width: 100%; height: 100%;">
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container-fluid">
           <img src="/src/logo.png" alt="" width="auto" height="50px" class="d-inline-block align-text-top">
@@ -42,6 +43,9 @@ function logout() {
               </li>
               <li class="nav-item">
                 <a class="nav-link" href="/lists">题单</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/records">提交记录</a>
               </li>
               {% if is_logined == False %}
               <li class="nav-item">
