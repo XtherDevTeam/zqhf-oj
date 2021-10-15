@@ -4,7 +4,7 @@
     <h2>{{problem["name"]}}</h2>
     <br>
     <h4>题目介绍</h4>
-    {{problem["description"]|safe}}<br><br>
+    <div id="description" style="display: inline;"></div><br><br>
     <h4>样例</h4>
     {% if example_count == 0 %}
     无<br>
@@ -33,6 +33,7 @@
 </div>
 <br><br>
 <script>
+document.getElementById('description').innerHTML = decodeURI('{{problem["description"]|safe}}');
 function goto_post() {
     window.location += '/post'
 }

@@ -10,7 +10,7 @@
     <h4>题目标题</h4>
     <input id="title" name="title" type="text" class="form-control" value="" aria-describedby="basic-addon1"><br>
     <h4>题目解释</h4>
-    <input id="description" name="description" type="text" class="form-control" value="" aria-describedby="basic-addon1"><br>
+    <textarea id="description" name="description"></textarea><br>
     <h4>标签</h4>(以列表格式输入:例如["入门","CSP-J 2021"])<br>
     <input id="tags" name="tags" type="text" class="form-control" value="" aria-describedby="basic-addon1"><br>
     <h4>样例输入</h4>(以json格式录入)<br>
@@ -43,10 +43,15 @@ var output_edit = CodeMirror.fromTextArea(document.getElementById("output"), {
     mode: 'text/txt',
     lineNumbers: true
 });
+var description_edit = CodeMirror.fromTextArea(document.getElementById("description"), {
+    mode: 'text/txt',
+    lineNumbers: true
+});
+
 
 {% if origin != None %}
 document.getElementById('title').value = '{{origin["name"]}}';
-document.getElementById('description').value = decodeURI('{{origin["description"|safe]}}');
+description_edit.setValue( decodeURI('{{origin["description"|safe]}}'));
 document.getElementById('tags').value = '{{tags|safe}}';
 eg_in_edit.setValue( decodeURI('{{input_examples|safe}}') );
 eg_out_edit.setValue( decodeURI('{{output_examples|safe}}') );
@@ -68,7 +73,7 @@ function submit() {
             "problem_json": JSON.stringify({
             "info": {
                 'name': document.getElementById('title').value,
-                'description': document.getElementById('description').value,
+                'description': encodeURI(description_edit.getValue()),
                 'tags': tags,
                 "input_example": eg_in,
                 "output_example": eg_out,
@@ -87,7 +92,7 @@ function submit() {
             "problem_json": JSON.stringify({
             "info": {
                 'name': document.getElementById('title').value,
-                'description': document.getElementById('description').value,
+                'description': encodeURI(description_edit.getValue()),
                 'tags': tags,
                 "input_example": eg_in,
                 "output_example": eg_out,

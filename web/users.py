@@ -1,56 +1,52 @@
-import os,sys,json,hashlib,time,demjson
+import os,sys,json,hashlib,time,demjson,database.client,config.global_config
 
-def sync_users_file(data):
-    print(data)
-    with open("config/users.json",'w+') as file:
-        file.write(json.dumps(data))
+
+def init():
+    print(__name__,'opened connection: ',database.client.open_connection(
+        config.global_config.global_config['database-server-host'],
+        config.global_config.global_config['database-server-port'],
+        config.global_config.global_config['database-server-username'],
+        config.global_config.global_config['database-server-password']
+    ))
 
 def get_user_item(username:str):
-    with open("config/users.json",'r+') as file:
-        data = json.loads(file.read())
-    #print(data)
-    return data.get(username)
+    result = database.client.item_operate('oj_users',username,'get')
+    print(result)
+    if result[0] == 'FAIL': return None
+    return result[1]
 
 def check_user(username:str,password:str):
-    with open("config/users.json",'r+') as file:
-        data = json.loads(file.read())
+    info = get_user_item(username)
     password = '_@zqhf_oj_password_enFoZi1vai1wYXNzd29yZC1wcmVmaXg=' + password
     password = hashlib.md5(password.encode('utf-8')).hexdigest()
-    if data.get(username)["password"] == password:
+    if info["password"] == password:
         return True
     else:
         return False
 
 def set_user_premission(username:str,level:int):
-    with open("config/users.json",'r+') as file:
-        data = json.loads(file.read())
-    data[username]["premission"] = level
-    sync_users_file(data)
+    info = get_user_item(username)
+    info["premission"] = level
+    database.client.item_operate('oj_users',username,'change',info)
 
 def set_user_password(username:str,password:str):
-    with open("config/users.json",'r+') as file:
-        data = json.loads(file.read())
+    info = get_user_item(username)
     password = '_@zqhf_oj_password_enFoZi1vai1wYXNzd29yZC1wcmVmaXg=' + password
     password = hashlib.md5(password.encode('utf-8')).hexdigest()
-    data[username]["password"] = password
-    sync_users_file(data)
+    info[username]["password"] = password
+    database.client.item_operate('oj_users',username,'change',info)
 
 def set_user_descriptions(username:str, desciptions:dict):
-    with open("config/users.json",'r+') as file:
-        data = json.loads(file.read())
-    data[username]["descriptions"] = desciptions
-    sync_users_file(data)
+    result = get_user_item(username)
+    result["descriptions"] = desciptions
+    database.client.item_operate('oj_users',username,'change',result)
 
 def get_user_descriptions(username:str):
-    with open("config/users.json",'r+') as file:
-        data = json.loads(file.read())
-    return data[username]["descriptions"]
+    return get_user_item(username)["descriptions"]
 
 def new_user(username:str,level:int,pwd:str):
-    with open("config/users.json",'r+') as file:
-        data = json.loads(file.read())
-    data[username] = {}
-    sync_users_file(data)
+    info = {}
+    database.client.item_operate('oj_users',username,'new',info)
     set_user_premission(username,level)
     set_user_password(username,pwd)
     set_user_descriptions( username, 
@@ -63,11 +59,6 @@ def new_user(username:str,level:int,pwd:str):
     })
 
 def remove_user(username:str):
-    with open("config/users.json",'r+') as file:
-        data = json.loads(file.read())
-    if data.get(username) == None:
-        return 0
-    else:
-        del data[username]
-        sync_users_file(data)
-        return 1
+    database.client.item_operate('oj_users',username,'delete')
+
+init()

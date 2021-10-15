@@ -1,7 +1,7 @@
 import multiprocessing as mp
 import os
 from sys import stdout
-import judge.plugins,judge.records
+import judge.plugins,judge.records,traceback
 
 problems = None
 status = ['']
@@ -55,7 +55,7 @@ def task_processor(queue:mp.Queue):
             judge.records.push_record( [status[0],full_stdout[0],now_item[5],now_item[6]] )
             print(execute_result)
         except Exception as e:
-            print(str(e))
+            traceback.print_exc()
             pass
     print('unexpected exit')
 

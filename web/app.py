@@ -1,5 +1,5 @@
 import json
-import os,sys,flask,web.config,web.users,demjson,urllib.parse,judge.problems,judge.task,judge.records,judge.plugins
+import os,sys,flask,web.config,web.users,demjson,urllib.parse,judge.problems,judge.task,judge.records,judge.plugins,atexit
 from flask.templating import render_template
 
 app = flask.Flask(__name__,static_url_path='/src')
@@ -92,8 +92,7 @@ def index_of_api():
             problem = json.loads(problem)
             problem['info']['author'] = flask.session.get('username')
             pid = int(flask.request.form.get('action'))
-            judge.problems.data[pid] = problem['info']
-            judge.problems.sync_problems_file()
+            judge.problems.edit_problem(pid,problem['info'])
             judge.problems.createJudgeFile(pid,problem["input"],problem["output"])
             return {'status':'success'}
         elif(request_item == 'submitAnswer'):
@@ -182,6 +181,7 @@ def index_of_problems():
     prefix = 0
     if flask.request.args.get('index') != None:
         prefix = int(flask.request.args.get('index')) * 10
+    print('fuckyou!',judge.problems.get_problems_per_page(prefix,10))
     return createRootTemplate(
         '题库',
         flask.render_template(
@@ -319,21 +319,16 @@ def index_of_judge_record():
     prefix = 0
     if flask.request.args.get('index') != None:
         prefix = int(flask.request.args.get('index')) * 10
-    records = judge.records.get_records()
-    records.reverse()
+    records = judge.records.get_records_per_page(prefix)
     records_per_page = []
-    for i in range(0,10):
-        if prefix + i >= len(records):
-            continue
-        change = records[prefix + i]
-        real_record_id = len(records) - 1 - i - prefix
-        problem_id = int(records[prefix + i][3])
+    for i in records:
+        problem_id = int(i[0][3])
         problem_name = judge.problems.get_problem(problem_id)['name']
         records_per_page.append({
-            'record': change,
+            'record': i[0],
             'problem_id': problem_id,
             'problem_name': problem_name,
-            'real_record_id': real_record_id
+            'real_record_id': i[1]['record_id']
         })
 
     return createRootTemplate(
@@ -349,10 +344,18 @@ def index_of_judge_record():
 
 def run():
     web.config.open_config_file()
-    judge.problems.open_problems_file()
     judge.task.init()
+    #judge.records.web.users.init()
+    #judge.records.init()
+    #judge.problems.init()
+    # web.users.init()
     app.secret_key = 'zqhf_'+str(os.urandom(114514))
     app.run(web.config.get_config_value("server-host"),
             web.config.get_config_value("server-port"),
             debug=False,
         )
+
+@atexit.register
+def when_program_exit():
+    print(__name__,'exited')
+    web.users.database.client.close_connection()
