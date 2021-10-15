@@ -84,12 +84,17 @@ def run(addr:str,port:str, config:dict):
     server = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
     server.bind((addr,port))
     server.listen(128)
+    server.setblocking(0)
     while True:
-        clientSocket, clientAddr = server.accept()
-        clientSocket.setblocking(0)
-        print('get connection:' + str(clientAddr))
-        # processing(clientSocket,clientAddr,config)
-        threadpool[clientAddr] = threading.Thread(target=processing,args=(clientSocket,clientAddr,config))
-        threadpool[clientAddr].start()
-        threadpool[clientAddr].join()
+        try:
+            clientSocket, clientAddr = server.accept()
+            clientSocket.setblocking(0)
+            print('get connection:' + str(clientAddr))
+            # processing(clientSocket,clientAddr,config)
+            threadpool[clientAddr] = threading.Thread(target=processing,args=(clientSocket,clientAddr,config))
+            threadpool[clientAddr].start()
+            #threadpool[clientAddr].join()
+        except BlockingIOError as e:
+            print('I\'m free!','\b\b\b\b\b\b\b\b\b\b\b',end='\b')
+            pass
     server.close()
