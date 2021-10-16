@@ -1,1 +1,50 @@
-Hello
+<style>
+.main-panel{
+    position: relative;
+    float: left;
+    margin-left: 5%;
+    width: 70%;
+}
+.side-panel{
+    position: relative;
+    float: left;
+    margin-left: 10px;
+    width: 15%;
+    text-align: center;
+}
+.font-small{
+    font-size: 13px;
+}
+</style>
+<div style="width: 90%;margin: 0 auto;height: 60%;">
+    <div class="container main-panel" style="height: 100%;overflow-y: scroll;">
+        <br>
+        <h4><a href="/bulletins">公告</a></h4>
+        <table class="table" style="width: 100%;table-layout: fixed; word-break: break-all;white-space: nowrap;">
+            <thead>
+                <tr>
+                    <th style="width: 2rem;">#</th>
+                    <th>标题</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for i in board %}
+                <tr>
+                    <td>{{board.index(i)}}</td>
+                    <td><a href="/bulletins/{{i[1]}}">{{i[0]['title']}}</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <br>
+    </div>
+    <div class="container side-panel">
+        <br>
+        <img src="{{user['item']['descriptions']['user-img']}}" style="width: 100px;border-radius: 50%;">
+        <h4>{{user['name']}}</h4>
+        <div class="font-small" style="display: inline-block;width: 90%;height: 16px;overflow: hidden;word-break: break-all;max-lines: 1;">{{user['item']['descriptions']['description']}}</div><br>
+        <div class="font-small" style="display: inline-block;width: 90%;height: 16px;overflow: hidden;word-break: break-all;max-lines: 1;">join-time: {{user['item']['descriptions']['join-time']}}</div><br>
+        <div class="font-small" style="display: inline-block;width: 90%;height: 16px;overflow: hidden;word-break: break-all;max-lines: 1;">Solved: {{user['item']['descriptions']['solved-problems']}}</div><br>
+        <br>
+    </div>
+</div>

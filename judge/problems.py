@@ -38,6 +38,7 @@ def new_problem(problem_infomation:dict):
 def remove_problem(pid:int):
     database.client.item_operate('oj_problems',pid,'delete')
     infomation = database.client.table_operate('oj_problems','info')
+    print(infomation)
     if infomation[0] == 'FAIL': return None
     return infomation[1]['total_data'] - 1
 

@@ -1,9 +1,14 @@
-<br><br><br>
+
 <div class="container">
     <br>
-    <h4>{{ user['name'] }}</h4>
-    <h6>{{ user['item']['descriptions']['description'] }}</h6>
-    <h6>Join time: {{ user['item']['descriptions']['join-time'] }}</h6>
+    <div>
+        <img src="{{user['item']['descriptions']['user-img']}}" style="width: 100px;border-radius: 50%;float: left;"><br>
+        <div style="float: left;margin-left: 10px;">
+            <h4>{{ user['name'] }}</h4>
+            <h6 style="font-size: 13px;top: 40%;">{{ user['item']['descriptions']['description'] }}</h6>
+        </div>
+    </div>
+    <h6 style="clear: both;">Join time: {{ user['item']['descriptions']['join-time'] }}</h6>
     <h6>Accepted problems: {{ ACedCount }}</h6>
     <br>
     <div class="introduction">

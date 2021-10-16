@@ -2,32 +2,32 @@
 <div class="container" style="margin: 0 auto;">
     <br>
     <div id="liveAlertPlaceholder"></div>
-    <h2>题目列表: 第{{ now_index }} / {{ total_index }}页</h2>
+    <h2>公告列表: 第{{ now_index }} / {{ total_index }}页</h2>
     <br>
+    {% if user['item']['premission'] == 0 %}
     <div class="btn-group" role="group">
-        <button type="button" class="btn btn-primary" onclick="new_problem()">创建题目</button>
+        <button type="button" class="btn btn-primary" onclick="new_bulletin()">创建公告</button>
     </div>
+    {% endif %}
     <br>
     <table class="table" style="width: 100%; table-layout: fixed; word-break: break-all;white-space: nowrap;">
         <thead>
             <tr>
                 <th>Title</th>
-                <th>Tags</th>
                 {% if user['item']['premission'] == 0 %}
                 <th>Actions</th>
                 {% endif %}
             </tr>
         </thead>
         <tbody>
-            {% for i in problems%}
+            {% for i in board %}
             <tr>
-                <td><a href="/problems/{{problems.index(i)}}">{{i['name']}}</a></td>
-                <td>{{i['tags']}}</td>
+                <td><a href="/bulletins/{{i[1]}}">{{i[0]['title']}}</a></td>
                 {% if user['item']['premission'] == 0 %}
                 <td>
                     <div class="btn-group" role="group">
-                        <button type="button" class="btn btn-primary" onclick="remove_problem('{{problems.index(i)}}')">删除</button>
-                        <button type="button" class="btn btn-primary" onclick="edit_problem('{{problems.index(i)}}')">编辑</button>
+                        <button type="button" class="btn btn-primary" onclick="remove_bulletin('{{i[1]}}')">删除</button>
+                        <button type="button" class="btn btn-primary" onclick="edit_bulletin('{{i[1]}}')">编辑</button>
                     </div>
                 </td>
                 {% endif %}
@@ -37,7 +37,7 @@
     </table>
     <center>
     {% if now_index != 0 %}
-    <a href="/problems?index={{now_index - 1}}">Preview</a>·
+    <a href="/bulletins?index={{now_index - 1}}">Preview</a>·
     {% else %}
     Preview·
     {% endif %}
@@ -45,11 +45,11 @@
     {% if i > total_index %}
     {{i}}·
     {% else %}
-    <a href="/problems?index={{i}}">{{i}}</a>·
+    <a href="/bulletins?index={{i}}">{{i}}</a>·
     {% endif %}
     {% endfor %}
     {% if now_index != total_index %}
-    <a href="/problems?index={{now_index + 1}}">Next</a>
+    <a href="/bulletins?index={{now_index + 1}}">Next</a>
     {% else %}
     Next
     {% endif %}
@@ -64,19 +64,19 @@ function alert(message, type) {
     wrapper.innerHTML = '<div class="alert alert-' + type + ' alert-dismissible" role="alert">' + message + '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>'    
     alertPlaceholder.append(wrapper)
 }
-function remove_problem(pid) {
+function remove_bulletin(pid) {
     let xmlhttp = new XMLHttpRequest();
-    xmlhttp.open('GET','/api?request=remove_problem&pid=' + pid,0)
+    xmlhttp.open('GET','/api?request=remove_bulletin&id=' + pid,0)
     xmlhttp.send();
     if(JSON.parse(xmlhttp.responseText)["status"] != "success"){
         alert(JSON.parse(xmlhttp.responseText)["reason"],"danger");
     }
     window.location = window.location;
 }
-function edit_problem(pid) {
-    window.location = '/problems/edit?pid=' + pid;
+function edit_bulletin(pid) {
+    window.location = '/bulletins/' + pid + '/edit';
 }
-function new_problem() {
-    window.location = '/problems/post';
+function new_bulletin() {
+    window.location = '/bulletins/post';
 }
 </script>

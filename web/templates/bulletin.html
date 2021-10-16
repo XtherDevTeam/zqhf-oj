@@ -1,0 +1,12 @@
+<div class="container" style="width: 90%;margin: 0 auto;">
+    <br>
+    <h3>{{bulletin['title']}}</h3>
+    {{bulletin['time']}}<br><br>
+    <div id="textarea">
+
+    </div>
+    <br>
+</div>
+<script>
+document.getElementById('textarea').innerHTML = decodeURI('{{bulletin["content"]}}');
+</script>

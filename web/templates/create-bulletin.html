@@ -1,0 +1,59 @@
+
+<div class="container" style="margin: 0 auto;">
+    <br>
+    {% if origin == None %}
+    <h2>创建公告</h2>
+    {% else %}
+    <h2>修改公告</h2>
+    {% endif %}
+    <br>
+    <h4>公告标题</h4>
+    <input id="title" name="title" type="text" class="form-control" value="" aria-describedby="basic-addon1"><br>
+    <h4>内容</h4>支持HTML格式<br>
+    <textarea id="content" name="content"></textarea><br>
+    <a class="btn btn-primary" href="javascript:void(0);" onclick="submit();">上传</a><br>
+    <br>
+</div>
+<br>
+<script>
+var content_edit = CodeMirror.fromTextArea(document.getElementById("content"), {
+    mode: 'text/html',
+    lineNumbers: true
+});
+
+
+{% if origin != None %}
+document.getElementById('title').value = '{{origin["title"]}}';
+content_edit.setValue( decodeURI('{{origin["content"|safe]}}'));
+{% endif %}
+
+function submit() {
+    content = content_edit.getValue();
+    //$http.post('/api?request=updateUserSpace', { 'description':description,'introduction':introduction });
+    {% if origin != None %}
+    $.post('/api?request=editBulletin',
+        {
+            "action":"{{bulletin_id}}",
+            "problem_json": JSON.stringify({
+                'title': document.getElementById('title').value,
+                'content': encodeURI(content_edit.getValue())
+        })
+        },function (){
+        alert('success');
+        window.location = '/bulletins';
+    },'json')
+    {% else %}
+    $.post('/api?request=postBulletin',
+        {
+            "action":"upload",
+            "problem_json": JSON.stringify({
+                'title': document.getElementById('title').value,
+                'content': encodeURI(content_edit.getValue())
+        })
+        },function (){
+        alert('success');
+        window.location = '/bulletins';
+    },'json')
+    {% endif %}
+}
+</script>

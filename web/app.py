@@ -1,8 +1,56 @@
 import json
-import os,sys,flask,web.config,web.users,demjson,urllib.parse,judge.problems,judge.task,judge.records,judge.plugins,atexit
+import os,sys,flask,web.config,web.users,demjson,urllib.parse,judge.problems,judge.task,judge.records,judge.plugins,atexit,base64,time
 from flask.templating import render_template
 
 app = flask.Flask(__name__,static_url_path='/src')
+
+def get_bulletin(index:int):
+    query_result = web.users.database.client.item_operate('oj_board',index,'get')
+    if query_result[0] != 'OK': return None
+    return query_result[1]
+
+def new_bulletin(title:str,content:str,time:str):
+    cnt = get_bulletin_count()
+    query_result = web.users.database.client.item_operate('oj_board',cnt,'new',{
+        'title': title,
+        'content': content,
+        'time': time
+    })
+    return query_result
+
+def edit_bulletin(id:int,title:str,content:str):
+    query_result = web.users.database.client.item_operate('oj_board',id,'change',{
+        'title': title,
+        'content': content
+    })
+    return query_result
+
+def remove_bulletin(index:int):
+    query_result = web.users.database.client.item_operate('oj_board',index,'delete')
+    if query_result[0] != 'OK': return None
+    return query_result[1]
+
+def get_bulletin_count():
+    query_result = web.users.database.client.table_operate('oj_board','info')
+    if query_result[0] != 'OK': return None
+    return query_result[1]['total_data']
+
+def get_bullets(begin:int,end:int):
+    count = get_bulletin_count()
+    if begin > end: begin = count
+    if end > count: end = count
+    if begin < 0: begin = 0
+    if end < 0: end = 0
+    result = []
+    for i in range(begin,end):
+        result.append( [ get_bulletin(i),i ] )
+    return result
+
+def get_board(prefix:int):
+    total = get_bulletin_count()
+    print('debug',total,prefix)
+    result = get_bullets(prefix,prefix + 10)
+    return result
 
 def createRootTemplate( _action:str,renderText ):
     logined = (flask.session.get('username') != None)
@@ -20,11 +68,125 @@ def index():
     logined = (flask.session.get('username') != None)
     if not logined:
         return flask.redirect('/login?reason=You are not signed in!')
+
+    board = get_board(get_bulletin_count() - 10)
+    board.reverse()
     return createRootTemplate(
         '主页',
         flask.render_template(
             'index.html',
-            config_file = web.config.configf
+            config_file = web.config.configf,
+            user = { 'name':flask.session.get('username'), 'item':web.users.get_user_item(flask.session.get('username'))  },
+            board = board,
+        )
+    )
+
+@app.route('/bulletins',methods = ["GET"])
+def index_of_bulletin_list():
+    logined = (flask.session.get('username') != None)
+    if not logined:
+        return flask.redirect('/login?reason=You are not signed in!')
+    prefix = 0
+    if flask.request.args.get('index') != None: prefix = int(flask.request.args.get('index')) * 10
+    board = get_board(prefix)
+    board.reverse()
+    now_index = 0
+    if flask.request.args.get('index') != None: now_index = int(flask.request.args.get('index'))
+    return createRootTemplate(
+        '公告列表',
+        flask.render_template(
+            'bulletins_list.html',
+            config_file = web.config.configf,
+            user = { 'name':flask.session.get('username'), 'item':web.users.get_user_item(flask.session.get('username'))  },
+            board = board,
+            now_index = now_index,
+            total_index = int(get_bulletin_count() / 10),
+        )
+    )
+
+@app.route('/bulletins/<id>/edit',methods = ["GET"])
+def index_of_edit_bulletin(id):
+    logined = (flask.session.get('username') != None)
+    if not logined:
+        return flask.redirect('/login?reason=You are not signed in!')
+    if web.users.get_user_item(flask.session.get('username')) == None or web.users.get_user_item(flask.session.get('username'))['premission'] != 0:
+        return createRootTemplate(
+            '错误',
+            flask.render_template(
+                'error.html',
+                config_file = web.config.configf,
+                reason = '用户' + flask.session.get('username') + '权限不足'
+            )
+        )
+
+    bulletin = get_bulletin(int(id))
+    if bulletin == None:
+        return createRootTemplate(
+            '错误',
+            flask.render_template(
+                'error.html',
+                config_file = web.config.configf,
+                reason = '公告不存在'
+            )
+        )
+
+    return createRootTemplate(
+        '修改公告',
+        flask.render_template(
+            'create-bulletin.html',
+            config_file = web.config.configf,
+            user = { 'name':flask.session.get('username'), 'item':web.users.get_user_item(flask.session.get('username'))  },
+            origin = bulletin,
+            bulletin_id = int(id),
+        )
+    )
+
+@app.route('/bulletins/<id>',methods = ["GET"])
+def index_of_show_bulletin(id):
+    bulletin = get_bulletin(int(id))
+    if bulletin == None:
+        return createRootTemplate(
+            '错误',
+            flask.render_template(
+                'error.html',
+                config_file = web.config.configf,
+                reason = '公告不存在'
+            )
+        )
+    return createRootTemplate(
+        bulletin['title'],
+        flask.render_template(
+            'bulletin.html',
+            config_file = web.config.configf,
+            user = { 'name':flask.session.get('username'), 'item':web.users.get_user_item(flask.session.get('username'))  },
+            bulletin = bulletin,
+            bulletin_id = int(id),
+        )
+    )
+    pass
+
+@app.route('/bulletins/post',methods = ["GET"])
+def index_of_post_bulletin():
+    logined = (flask.session.get('username') != None)
+    if not logined:
+        return flask.redirect('/login?reason=You are not signed in!')
+    if web.users.get_user_item(flask.session.get('username')) == None or web.users.get_user_item(flask.session.get('username'))['premission'] != 0:
+        return createRootTemplate(
+            '错误',
+            flask.render_template(
+                'error.html',
+                config_file = web.config.configf,
+                reason = '用户' + flask.session.get('username') + '权限不足'
+            )
+        )
+
+    return createRootTemplate(
+        '创建公告',
+        flask.render_template(
+            'create-bulletin.html',
+            config_file = web.config.configf,
+            user = { 'name':flask.session.get('username'), 'item':web.users.get_user_item(flask.session.get('username'))  },
+            origin = None
         )
     )
 
@@ -59,9 +221,16 @@ def index_of_api():
                 del flask.session['username']
             return {'status':'success'}
         elif request_item == 'remove_problem':
-            if flask.session.get('pid') == None or int(flask.session.get('pid')) >= judge.problems.get_problems_count():
+            if flask.request.args.get('pid') == None or int(flask.request.args.get('pid')) > judge.problems.get_problems_count():
+                print('count: ',judge.problems.get_problems_count())
                 return {'status':'error', 'reason':'invalid or empty problem id.'}
-            judge.problems.remove_problem(int(flask.session.get('pid')))
+            judge.problems.remove_problem(int(flask.request.args.get('pid')))
+            return {'status':'success'}
+        elif request_item == 'remove_bulletin':
+            if flask.request.args.get('id') == None or int(flask.request.args.get('id')) > get_bulletin_count():
+                return {'status':'error', 'reason':'invalid or empty bulletin id.'}
+            remove_bulletin(int(flask.request.args.get('id')))
+            
             return {'status':'success'}
     elif flask.request.method == "POST":
         request_item = flask.request.args.get('request')
@@ -69,6 +238,24 @@ def index_of_api():
             return {'status':'error', 'reason': 'no request argument found.'}
         if flask.session.get('username') == None:
             return {'status':'error', 'reason':'no matches cookies found.'}
+        if(request_item == 'changeUserImg'):
+            if flask.session.get('username') == None:
+                return {'status':'error', 'reason':'no matches cookies found.'}
+            img = flask.request.files.get('user-img')
+            print(img)
+            img.save('./tmp/userimg.jpeg')
+            with open('./tmp/userimg.jpeg','rb+') as file:
+                f = file.read()
+                if (len(f) >= 4194304):
+                    os.remove('./tmp/userimg.jpeg')
+                    return {'status':'error', 'reason':'file too large.'}
+                image_base64 = str(base64.b64encode(f), encoding='utf-8')
+                userinfo = web.users.get_user_item(flask.session.get('username'))
+                userinfo['descriptions']['user-img'] = 'data:image/jpeg;base64,' + image_base64
+                web.users.set_user_descriptions(flask.session.get('username'), userinfo['descriptions'])
+            os.remove('./tmp/userimg.jpeg')
+            return flask.redirect('/user/self')
+
         if(request_item == 'updateUserSpace'):
             fill = web.users.get_user_item(flask.session['username'])['descriptions']
             fill['description'] = flask.request.form.get('description')
@@ -115,6 +302,21 @@ def index_of_api():
                 content['pid']
             )
             return {'status':'success', 'task_id': task_id}
+        elif(request_item == 'postBulletin'):
+            bulletin = flask.request.form.get('problem_json')
+            if bulletin == None:
+                return {'status':'error', 'reason': 'invalid post format'}
+            bulletin = json.loads(bulletin)
+            new_bulletin(bulletin['title'],bulletin['content'],time.strftime('%Y-%m-%d %H:%M:%S Localtime',time.localtime(time.time())))
+            return {'status':'success'}
+        elif(request_item == 'editBulletin'):
+            bulletin = flask.request.form.get('problem_json')
+            if bulletin == None:
+                return {'status':'error', 'reason': 'invalid problem format'}
+            bulletin = json.loads(bulletin)
+            id = int(flask.request.form.get('action'))
+            edit_bulletin(id,bulletin['title'],bulletin['content'])
+            return {'status':'success'}
 
 @app.route('/login',methods = ["GET"])
 def index_of_login():
@@ -322,14 +524,17 @@ def index_of_judge_record():
     records = judge.records.get_records_per_page(prefix)
     records_per_page = []
     for i in records:
-        problem_id = int(i[0][3])
-        problem_name = judge.problems.get_problem(problem_id)['name']
-        records_per_page.append({
-            'record': i[0],
-            'problem_id': problem_id,
-            'problem_name': problem_name,
-            'real_record_id': i[1]['record_id']
-        })
+        try:
+            problem_id = int(i[0][3])
+            problem_name = judge.problems.get_problem(problem_id)['name']
+            records_per_page.append({
+                'record': i[0],
+                'problem_id': problem_id,
+                'problem_name': problem_name,
+                'real_record_id': i[1]['record_id']
+            })
+        except Exception as e:
+            print(e,judge.records.database.client.item_operate('oj_records',i[1]['record_id'],'delete'))
 
     return createRootTemplate(
         '提交记录',

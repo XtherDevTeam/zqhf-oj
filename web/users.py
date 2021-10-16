@@ -33,7 +33,7 @@ def set_user_password(username:str,password:str):
     info = get_user_item(username)
     password = '_@zqhf_oj_password_enFoZi1vai1wYXNzd29yZC1wcmVmaXg=' + password
     password = hashlib.md5(password.encode('utf-8')).hexdigest()
-    info[username]["password"] = password
+    info["password"] = password
     database.client.item_operate('oj_users',username,'change',info)
 
 def set_user_descriptions(username:str, desciptions:dict):
@@ -53,7 +53,7 @@ def new_user(username:str,level:int,pwd:str):
     {
         'description':'👴莫得介绍', 
         'user-img':'',
-        'join-time':time.strftime('%Y-%m-%d %H:%M:%S UTC' + str(time.timezone),time.localtime(time.time())),
+        'join-time':time.strftime('%Y-%m-%d %H:%M:%S UTC' + str(time.timezone/60/60),time.localtime(time.time() + time.timezone)),
         'introduction': '',
         'solved-problems': []
     })

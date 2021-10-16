@@ -1,6 +1,12 @@
-<br><br><br>
+
 <div class="container">
     <br>
+    <form action="/api?request=changeUserImg" method="post" enctype="multipart/form-data">
+        <input id="user-img" name="user-img" type="file" class="form-control"><br>
+        <button class="btn btn-primary" href="javascript:void(0);">修改头像</button>
+        <br>
+        <br>
+    </form>
     用户名: <input id="username" disabled name="username" type="text" class="form-control" placeholder="" aria-describedby="basic-addon1"><br>
     个人介绍(较短): <input id="description" name="description" type="text" class="form-control" placeholder="" aria-describedby="basic-addon1"><br>
     介绍(可用HTML):<br><textarea id="introduction" name="introduction" rows="1" style="width: 95%;"></textarea>

@@ -40,10 +40,11 @@ def get_record_count():
     return query_info[1]['total_data']
 
 def push_record(info:list):
-    temp = None
+    temp = info
     jid = get_record_count()
     database.client.item_operate('oj_records',jid,'new',info)
-    if temp[0][0] == 'Accepted':
+    print(info)
+    if temp[0] == 'Accepted':
         print('AC:' , info[2], info[3])
         description = web.users.get_user_descriptions(info[2])
         if description['solved-problems'].count(int(info[3])) == 0:

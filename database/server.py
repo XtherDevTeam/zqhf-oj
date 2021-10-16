@@ -68,6 +68,8 @@ def processing(clientSocket:socket.socket,clientAddr:tuple,config:dict):
                             clientSocket.send( pickle.dumps( database.dbapis.removeTable(recv_data['table']) ) )
                         elif recv_data['action'] == 'info':
                             clientSocket.send( pickle.dumps( database.dbapis.getTableInfo(recv_data['table']) ) )
+                        elif recv_data['action'] == 'clear':
+                            clientSocket.send( pickle.dumps( database.dbapis.createTable(recv_data['table']) ) )
                         else:
                             clientSocket.send( pickle.dumps( {'status':'FAIL','data':'unknown command'} ) )
                 else:
