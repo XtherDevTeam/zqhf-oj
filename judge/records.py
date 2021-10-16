@@ -1,4 +1,4 @@
-import os,sys,json,web.users,config.global_config,database.client
+import os,sys,json,web.users,config.global_config,database.client,web.ranking
 '''
 def sync_records(data):
     with open('judge/records.json','w+') as file:
@@ -16,7 +16,7 @@ def init():
 def get_record(jid:int):
     result = database.client.table_operate('oj_records','info')
     if result[0] == 'FAIL': return None
-    if jid >= result[1]['total_data']:
+    if jid >= result[1]['total_data_cnt']:
         return None
     return database.client.item_operate('oj_records',jid,'get')[1]
 
@@ -24,9 +24,9 @@ def get_records_per_page(prefix:int):
     query_info = database.client.table_operate('oj_records','info')
     print(query_info)
     result = []
-    for i in range(query_info[1]['total_data'] - prefix - 10,query_info[1]['total_data']):
+    for i in range(query_info[1]['total_data_cnt'] - prefix - 10,query_info[1]['total_data_cnt']):
         if i < 0: continue
-        if i == query_info[1]['total_data']: break
+        if i == query_info[1]['total_data_cnt']: break
         temp = get_record(i)
         temp = [temp, {
             'record_id': i,
@@ -37,7 +37,7 @@ def get_records_per_page(prefix:int):
 
 def get_record_count():
     query_info = database.client.table_operate('oj_records','info')
-    return query_info[1]['total_data']
+    return query_info[1]['total_data_cnt']
 
 def push_record(info:list):
     temp = info
@@ -50,6 +50,7 @@ def push_record(info:list):
         if description['solved-problems'].count(int(info[3])) == 0:
             description['solved-problems'].append(int(info[3]))
             web.users.set_user_descriptions(info[2],description)
+            web.ranking.resort_table(info[2])
     return jid
 
 init()

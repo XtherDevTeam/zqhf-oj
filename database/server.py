@@ -9,7 +9,9 @@ def recv_all(clientSocket:socket.socket):
     ranIntoInput = False
     while True:
         try:
+            clientSocket.setblocking(0)
             current = clientSocket.recv(1024)
+            clientSocket.setblocking(1)
             if len(current) == 0:
                 break
             else: result += current
@@ -68,6 +70,10 @@ def processing(clientSocket:socket.socket,clientAddr:tuple,config:dict):
                             clientSocket.send( pickle.dumps( database.dbapis.removeTable(recv_data['table']) ) )
                         elif recv_data['action'] == 'info':
                             clientSocket.send( pickle.dumps( database.dbapis.getTableInfo(recv_data['table']) ) )
+                        elif recv_data['action'] == 'all':
+                            clientSocket.send( pickle.dumps( database.dbapis.getTableData(recv_data['table']) ) )
+                        elif recv_data['action'] == 'set':
+                            clientSocket.send( pickle.dumps( database.dbapis.setTableData(recv_data['table'],recv_data['data']) ) )
                         elif recv_data['action'] == 'clear':
                             clientSocket.send( pickle.dumps( database.dbapis.createTable(recv_data['table']) ) )
                         else:

@@ -1,0 +1,69 @@
+
+<div class="container" style="margin: 0 auto;">
+    <br>
+    <div id="liveAlertPlaceholder"></div>
+    <h2>排名列表: 第{{ now_index }} / {{ total_index }}页</h2>
+    <br>
+    <table class="table" style="width: 100%; table-layout: fixed; word-break: break-all;white-space: nowrap;overflow-x: hidden;">
+        <thead>
+            <tr>
+                <th style="width: 10%;">#</th>
+                <th style="width: 30%;">用户名</th>
+                <th style="width: 60%;overflow-x: hidden;">个人介绍</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for i in ranking %}
+            <tr>
+                <td>{{i[1]}}</td>
+                <td><a href="/user/{{i[name]}}">{{i[0]['name']}}</a></td>
+                <td>{{i[0]['description']}}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <center>
+    {% if now_index != 0 %}
+    <a href="/ranking?index={{now_index - 1}}">Preview</a>·
+    {% else %}
+    Preview·
+    {% endif %}
+    {% for i in range(now_index,now_index + 10) %}
+    {% if i > total_index %}
+    {{i}}·
+    {% else %}
+    <a href="/ranking?index={{i}}">{{i}}</a>·
+    {% endif %}
+    {% endfor %}
+    {% if now_index != total_index %}
+    <a href="/ranking?index={{now_index + 1}}">Next</a>
+    {% else %}
+    Next
+    {% endif %}
+    </center>
+    <br>
+</div>
+
+<script>
+var alertPlaceholder = document.getElementById('liveAlertPlaceholder')
+function alert(message, type) {
+    var wrapper = document.createElement('div')
+    wrapper.innerHTML = '<div class="alert alert-' + type + ' alert-dismissible" role="alert">' + message + '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>'    
+    alertPlaceholder.append(wrapper)
+}
+function remove_bulletin(pid) {
+    let xmlhttp = new XMLHttpRequest();
+    xmlhttp.open('GET','/api?request=remove_bulletin&id=' + pid,0)
+    xmlhttp.send();
+    if(JSON.parse(xmlhttp.responseText)["status"] != "success"){
+        alert(JSON.parse(xmlhttp.responseText)["reason"],"danger");
+    }
+    window.location = window.location;
+}
+function edit_bulletin(pid) {
+    window.location = '/bulletins/' + pid + '/edit';
+}
+function new_bulletin() {
+    window.location = '/bulletins/post';
+}
+</script>

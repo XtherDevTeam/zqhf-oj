@@ -31,21 +31,21 @@ def edit_problem(pid:int,problem_infomation:dict):
 def new_problem(problem_infomation:dict):
     infomation = database.client.table_operate('oj_problems','info')
     if infomation[0] == 'FAIL': return None
-    result = database.client.item_operate('oj_problems',infomation[1]['total_data'],'new',problem_infomation)
+    result = database.client.item_operate('oj_problems',infomation[1]['total_data_cnt'],'new',problem_infomation)
     if result[0] == 'FAIL': return None
-    return infomation[1]['total_data']
+    return infomation[1]['total_data_cnt']
 
 def remove_problem(pid:int):
     database.client.item_operate('oj_problems',pid,'delete')
     infomation = database.client.table_operate('oj_problems','info')
     print(infomation)
     if infomation[0] == 'FAIL': return None
-    return infomation[1]['total_data'] - 1
+    return infomation[1]['total_data_cnt'] - 1
 
 def get_problems_count():
     infomation = database.client.table_operate('oj_problems','info')
     if infomation[0] == 'FAIL': return None
-    return infomation[1]['total_data']
+    return infomation[1]['total_data_cnt']
 
 def get_problems(from_pid:int,to_pid:int):
     result = []
@@ -60,7 +60,7 @@ def get_problems_per_page(prefix:int,count:int):
     if infomation[0] == 'FAIL':
         print('why?',infomation)
         return None
-    length = infomation[1]['total_data']
+    length = infomation[1]['total_data_cnt']
     result = []
     if prefix > length:
         return get_problems(0,length)

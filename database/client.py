@@ -14,6 +14,7 @@ def recv_all():
         try:
             client.setblocking(0)
             now = client.recv(1024)
+            client.setblocking(1)
             if len(now) == 0:
                 break
             result += now
@@ -62,7 +63,7 @@ def item_operate(tab:str,name:str,operation:str,data:dict = {}):
     if recv_data['status'] == 'OK': return ('OK',recv_data['data'])
     else: return ('FAIL',recv_data['data'])
 
-def table_operate(tab:str,operation:str):
+def table_operate(tab:str,operation:str,data:dict = {}):
     global client
     if client == None:
         return ('FAIL','Client is hot connected to server')
@@ -70,6 +71,7 @@ def table_operate(tab:str,operation:str):
         'action': operation,
         'object': 'table',
         'table': tab,
+        'data': data
     }))
     recv_data = pickle.loads(recv_all())
     if recv_data['status'] == 'OK': return ('OK',recv_data['data'])

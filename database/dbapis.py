@@ -37,8 +37,25 @@ def getTableInfo(name:str):
     if db.get(name) == None: return {'status':'FAIL','data':'no match table found.'}
     return {'status':'OK','data':{
         'name': name,
-        'total_data': len(db.get(name)['data'])
+        'total_data_cnt': len(db.get(name)['data']),
     }}
+
+def getTableData(name:str):
+    global db
+    if db == None: openDBFile()
+    if db.get(name) == None: return {'status':'FAIL','data':'no match table found.'}
+    return {'status':'OK','data':{
+        'name': name,
+        'data': list(db.get(name)['data'].keys()),
+    }}
+
+def setTableData(name:str,data:dict):
+    global db
+    if db == None: openDBFile()
+    if db.get(name) == None: return {'status':'FAIL','data':'no match table found.'}
+    db[name] = data
+    return {'status':'OK','data':None}
+
 
 def queryItem(tab:str,name:str):
     global db

@@ -1,5 +1,5 @@
 import json
-import os,sys,flask,web.config,web.users,demjson,urllib.parse,judge.problems,judge.task,judge.records,judge.plugins,atexit,base64,time
+import os,sys,flask,web.config,web.users,demjson,urllib.parse,judge.problems,judge.task,judge.records,judge.plugins,atexit,base64,time,web.ranking
 from flask.templating import render_template
 
 app = flask.Flask(__name__,static_url_path='/src')
@@ -33,7 +33,7 @@ def remove_bulletin(index:int):
 def get_bulletin_count():
     query_result = web.users.database.client.table_operate('oj_board','info')
     if query_result[0] != 'OK': return None
-    return query_result[1]['total_data']
+    return query_result[1]['total_data_cnt']
 
 def get_bullets(begin:int,end:int):
     count = get_bulletin_count()
@@ -78,6 +78,7 @@ def index():
             config_file = web.config.configf,
             user = { 'name':flask.session.get('username'), 'item':web.users.get_user_item(flask.session.get('username'))  },
             board = board,
+            rankingTop10 = web.ranking.get_rankings_per_page(0)
         )
     )
 
@@ -164,6 +165,26 @@ def index_of_show_bulletin(id):
         )
     )
     pass
+
+@app.route('/ranking',methods = ["GET"])
+def index_of_ranking():
+    prefix = 0
+    if flask.request.args.get('index') != None: prefix = int(flask.request.args.get('index')) * 10
+    board = web.ranking.get_rankings_per_page(prefix)
+    now_index = 0
+    if flask.request.args.get('index') != None: now_index = int(flask.request.args.get('index'))
+
+    return createRootTemplate(
+        '排名列表',
+        flask.render_template(
+            'ranking.html',
+            config_file = web.config.configf,
+            user = { 'name':flask.session.get('username'), 'item':web.users.get_user_item(flask.session.get('username'))  },
+            ranking = board,
+            now_index = now_index,
+            total_index = int(web.ranking.get_ranking_count() / 10),
+        )
+    )
 
 @app.route('/bulletins/post',methods = ["GET"])
 def index_of_post_bulletin():
