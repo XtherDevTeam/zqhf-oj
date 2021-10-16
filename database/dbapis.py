@@ -53,7 +53,7 @@ def setTableData(name:str,data:dict):
     global db
     if db == None: openDBFile()
     if db.get(name) == None: return {'status':'FAIL','data':'no match table found.'}
-    db[name] = data
+    db[name]['data'] = data
     return {'status':'OK','data':None}
 
 

@@ -43,35 +43,43 @@ def init_ranking_table():
 
     users = {}
     index = 0
+    print(sorted)
     for i in sorted:
+        print(i)
+        database.client.item_operate('oj_ranking', index, 'new')
+        database.client.item_operate('oj_ranking', index, 'change', i)
+        print(database.client.table_operate('oj_ranking','all')[1]['data'])
+
         result = database.client.item_operate('oj_users', i['name'], 'get')
         result = result[1]
         result['ranking'] = index
         database.client.item_operate('oj_users', i['name'], 'change', result)
-        database.client.item_operate('oj_ranking', index, 'new', i)
         index += 1
     
     del sorted
     return ('OK',None)
 
 def resort_table(username:str):
-    origin = database.client.table_operate('oj_ranking','all')
+    origin_indexes = database.client.table_operate('oj_ranking','all')
+    origin = {}
+    for i in origin_indexes[1]['data']:
+        origin[i] = database.client.item_operate('oj_ranking',i,'get')[1]
+
     user = database.client.item_operate('oj_users',username,'get')
-    origin = origin[1]
     user = user[1]
     solved = user['descriptions']['solved-problems']
-    origin[user['ranking']]['solved'] = solved
+    origin[user['ranking']]['solved'] = len(solved)
     # solved过的题目不会减少
     if origin[user['ranking']]['solved'] > origin[user['ranking']-1]['solved']:
-        index = user['ranking'] - 1
-        while origin[index+1]['solved'] > origin[index]['solved']:
-            origin[index], origin[index+1] = origin[index+1], origin[index]
+        index = user['ranking']
+        while origin[index-1]['solved'] < origin[index]['solved']:
+            origin[index], origin[index-1] = origin[index-1], origin[index]
             index = index - 1
             if index == 0: break
         user['ranking'] = index
     elif origin[user['ranking']]['solved'] == origin[user['ranking']-1]['solved']: pass
     else:
-        raise Exception("ranking--")
+        pass
     database.client.item_operate('oj_users',username,'change',user)
     database.client.table_operate('oj_ranking','set',origin)
 
