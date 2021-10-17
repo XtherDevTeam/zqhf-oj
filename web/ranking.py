@@ -73,6 +73,10 @@ def resort_table(username:str):
     if origin[user['ranking']]['solved'] > origin[user['ranking']-1]['solved']:
         index = user['ranking']
         while origin[index-1]['solved'] < origin[index]['solved']:
+            loser = database.client.item_operate('oj_users',origin[index-1]['name'],'get')[1]
+            loser['ranking'] = index
+            database.client.item_operate('oj_users',origin[index-1]['name'],'change',loser)
+
             origin[index], origin[index-1] = origin[index-1], origin[index]
             index = index - 1
             if index == 0: break
