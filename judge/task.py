@@ -44,7 +44,7 @@ def task_processor(queue:mp.Queue):
                     now_item[4] = now_item[4][0:-1]
                 if len(execute_result[1]) != len(now_item[4]):
                     print(execute_result[1],'\n',now_item[4])
-                    status[status_queue_prefix] = 'Wrong Answer at character -' + str(len(execute_result[1])) + ' of ' + str(len(now_item[4]))
+                    status[status_queue_prefix] = 'Wrong Answer at character ' + str(len(execute_result[1])) + ' of ' + str(len(now_item[4]))
                 else:
                     for i in range(len(now_item[4])-1):
                         if(execute_result[1][i] != now_item[4][i]):
