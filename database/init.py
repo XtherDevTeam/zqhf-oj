@@ -1,4 +1,4 @@
-import database.client,config.global_config
+import database.client,config.global_config,web.users
 
 database.client.open_connection(
     config.global_config.global_config['database-server-host'],
@@ -12,3 +12,4 @@ database.client.table_operate('oj_problems','new')
 database.client.table_operate('oj_board','new')
 database.client.table_operate('oj_ranking','new')
 database.client.table_operate('oj_users','new')
+web.users.new_user('admin',0,'admin')
