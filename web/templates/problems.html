@@ -22,12 +22,16 @@
             {% for i in problems%}
             <tr>
                 <td><a href="/problems/{{now_index*10+ problems.index(i)}}">{{i['name']}}</a></td>
-                <td>{{i['tags']}}</td>
+                <td><h6>
+                {% for j in range(0,5) %}
+                <span class="badge bg-primary">{{i['tags'][j]}}</span>
+                {% endfor %}
+                </h6></td>
                 {% if user['item']['premission'] == 0 %}
                 <td>
                     <div class="btn-group" role="group">
-                        <button type="button" class="btn btn-primary" onclick="remove_problem('{{problems.index(i)}}')">删除</button>
-                        <button type="button" class="btn btn-primary" onclick="edit_problem('{{problems.index(i)}}')">编辑</button>
+                        <button type="button" class="btn btn-primary" onclick="remove_problem('{{now_index*10+ problems.index(i)}}')">删除</button>
+                        <button type="button" class="btn btn-primary" onclick="edit_problem('{{now_index*10+ problems.index(i)}}')">编辑</button>
                     </div>
                 </td>
                 {% endif %}

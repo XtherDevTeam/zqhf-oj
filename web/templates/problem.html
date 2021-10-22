@@ -2,6 +2,7 @@
 <div class="container" style="margin: 0 auto;">
     <br>
     <h2>{{problem["name"]}}</h2>
+    <i class="fas fa-stopwatch"></i> {{problem["time_limit"]}}ms <i class="fas fa-memory"></i> {{problem["mem_limit"]}}KB<br>
     <br>
     <h4>题目介绍</h4>
     <div id="description" style="display: inline;"></div><br><br>
@@ -32,7 +33,7 @@
     <br>
 </div>
 <script>
-document.getElementById('description').innerHTML = decodeURI('{{problem["description"]|safe}}');
+document.getElementById('description').innerHTML = decodeURIComponent('{{problem["description"]|safe}}');
 function goto_post() {
     window.location += '/post'
 }

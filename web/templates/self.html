@@ -24,7 +24,7 @@ var editor = CodeMirror.fromTextArea(document.getElementById("introduction"), {
 
 function submit() {
     description = document.getElementById('description').value;
-    introduction = encodeURI(editor.getValue());
+    introduction = encodeURIComponent(editor.getValue());
     //$http.post('/api?request=updateUserSpace', { 'description':description,'introduction':introduction });
     $.post('/api?request=updateUserSpace',{ 'description':description,'introduction':introduction },function (){
         alert('success');
@@ -34,5 +34,5 @@ function submit() {
 
 document.getElementById('username').value = "{{user['name']}}";
 document.getElementById('description').value = "{{user['item']['descriptions']['description']}}";
-editor.setValue(decodeURI("{{user['item']['descriptions']['introduction']|safe}}"));
+editor.setValue(decodeURIComponent("{{user['item']['descriptions']['introduction']|safe}}"));
 </script>

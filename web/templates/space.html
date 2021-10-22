@@ -3,12 +3,14 @@
     <br>
     <div>
         <img src="/api?request=userImg&name={{ user['name'] }}" style="width: 100px;border-radius: 50%;float: left;"><br>
-        <div style="float: left;margin-left: 10px;">
+        <div style="float: left;margin-left: 20px;">
             <h4>{{ user['name'] }}</h4>
             <h6 style="font-size: 13px;top: 40%;">{{ user['item']['descriptions']['description'] }}</h6>
         </div>
     </div>
-    <h6 style="clear: both;">Join time: {{ user['item']['descriptions']['join-time'] }}</h6>
+    <br style="clear: both;">
+    <br>
+    <h6>Join time: {{ user['item']['descriptions']['join-time'] }}</h6>
     <h6>Ranking: {{ user['item']['ranking']+1 }}</h6>
     <h6>Accepted problems: {{ ACedCount }}</h6>
     <br>

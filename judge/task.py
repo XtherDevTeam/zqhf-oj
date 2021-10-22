@@ -1,8 +1,7 @@
-from distutils.util import execute
 import multiprocessing as mp
 import os
 from sys import stdout
-import judge.plugins,judge.records,traceback
+import judge.plugins,judge.records,traceback,judge.problems
 
 problems = None
 status = ['']
@@ -10,8 +9,8 @@ full_stdout = ['']
 status_queue_prefix = 0
 q = mp.Queue()
 
-def push_task(use_plugin:str,input:str,output:str,source:str,binary:str,author:str,pid:str):
-    q.put( [ use_plugin, input, source, binary, output,author,pid ] )
+def push_task(use_plugin:str,input:str,output:str,source:str,binary:str,author:str,pid:int):
+    q.put( [ use_plugin, input, source, binary, output,author,int(pid) ] )
     print('task pushed->',q)
     return judge.records.get_record_count()
 
@@ -25,7 +24,18 @@ def task_processor(queue:mp.Queue):
                 continue
             now_item = queue.get()
             status[status_queue_prefix] = 'compiling'
-            execute_result = judge.plugins.execute_plugin(now_item[0],now_item[1], { 'source_file':now_item[2],'binary_file':now_item[3] })
+            problem_details = judge.problems.get_problem(now_item[6])
+            if problem_details == None:
+                print('invalid problem!', type(now_item[6]))
+                continue
+            print('time-limit:' , problem_details['time_limit'], 'memory-limit:', problem_details['mem_limit'])
+            execute_result = judge.plugins.execute_plugin(
+                now_item[0],
+                now_item[1],
+                { 'source_file':now_item[2],'binary_file':now_item[3] },
+                problem_details['time_limit'],
+                problem_details['mem_limit']
+            )
             try:
                 os.remove('./tmp/' + now_item[2])
                 os.remove('./tmp/' + now_item[3])

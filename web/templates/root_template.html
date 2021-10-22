@@ -83,6 +83,7 @@ function logout() {
                     alt=""
                     loading="lazy"
                   />
+                  &nbsp;{{ user['name'] }}
                 </a>
                 <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
                   {% if user['item']['premission'] == 0 %}

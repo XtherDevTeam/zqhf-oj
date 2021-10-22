@@ -13,6 +13,10 @@
     <textarea id="description" name="description"></textarea><br>
     <h4>标签</h4>(以列表格式输入:例如["入门","CSP-J 2021"])<br>
     <input id="tags" name="tags" type="text" class="form-control" value="" aria-describedby="basic-addon1"><br>
+    <h4>内存限制(单位KB)</h4>
+    <input id="memlimit" name="memlimit" type="text" class="form-control" value="" aria-describedby="basic-addon1"><br>
+    <h4>时间限制(单位ms)</h4>
+    <input id="timelimit" name="timelimit" type="text" class="form-control" value="" aria-describedby="basic-addon1"><br>
     <h4>样例输入</h4>(以json格式录入)<br>
     <textarea id="eg_in" name="eg_in"></textarea><br>
     <h4>样例输出</h4>(以json格式录入)<br>
@@ -51,12 +55,14 @@ var description_edit = CodeMirror.fromTextArea(document.getElementById("descript
 
 {% if origin != None %}
 document.getElementById('title').value = '{{origin["name"]}}';
-description_edit.setValue( decodeURI('{{origin["description"|safe]}}'));
+description_edit.setValue( decodeURIComponent('{{origin["description"|safe]}}'));
 document.getElementById('tags').value = '{{tags|safe}}';
-eg_in_edit.setValue( decodeURI('{{input_examples|safe}}') );
-eg_out_edit.setValue( decodeURI('{{output_examples|safe}}') );
-input_edit.setValue( decodeURI("{{judge_file[0]}}") )
-output_edit.setValue( decodeURI("{{judge_file[1]}}") )
+document.getElementById('timelimit').value = '{{origin["time_limit"|safe]}}';
+document.getElementById('memlimit').value = '{{origin["mem_limit"|safe]}}';
+eg_in_edit.setValue( decodeURIComponent('{{input_examples|safe}}') );
+eg_out_edit.setValue( decodeURIComponent('{{output_examples|safe}}') );
+input_edit.setValue( decodeURIComponent("{{judge_file[0]}}") )
+output_edit.setValue( decodeURIComponent("{{judge_file[1]}}") )
 {% endif %}
 
 function submit() {
@@ -73,10 +79,12 @@ function submit() {
             "problem_json": JSON.stringify({
             "info": {
                 'name': document.getElementById('title').value,
-                'description': encodeURI(description_edit.getValue()),
+                'description': encodeURIComponent(description_edit.getValue()),
                 'tags': tags,
                 "input_example": eg_in,
                 "output_example": eg_out,
+                'time_limit': parseInt(document.getElementById('timelimit').value),
+                'mem_limit': parseInt(document.getElementById('memlimit').value)
             },
             "input": judge_input,
             "output": judge_out
@@ -92,10 +100,12 @@ function submit() {
             "problem_json": JSON.stringify({
             "info": {
                 'name': document.getElementById('title').value,
-                'description': encodeURI(description_edit.getValue()),
+                'description': encodeURIComponent(description_edit.getValue()),
                 'tags': tags,
                 "input_example": eg_in,
                 "output_example": eg_out,
+                'time_limit': parseInt(document.getElementById('timelimit').value),
+                'mem_limit': parseInt(document.getElementById('memlimit').value)
             },
             "input": judge_input,
             "output": judge_out
