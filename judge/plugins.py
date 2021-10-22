@@ -13,7 +13,7 @@ def load_plugins_list():
         with open('judge/plugins/' + i + '.json','r+') as file:
             plugins_list.append(json.loads(file.read()))
     
-def execute_plugin( use_plugin:str, input:str, env:dict, time_out:int = 1000):
+def execute_plugin( use_plugin:str, input:str, env:dict, time_out:int = 1000, memlimit:int = 1024):
     if len(plugins_list) == 0:
         load_plugins_list()
     fork = plugins_list[origin_list.index(use_plugin)]
@@ -44,8 +44,8 @@ def execute_plugin( use_plugin:str, input:str, env:dict, time_out:int = 1000):
     pipe_stdin = open('./tmp/stdin.log','r+')
     pipe_stdout = open('./tmp/stdout.log','w+')
     pipe_stderr = open('./tmp/stderr.log','w+')
-    print('executing: ',fork['compile_command'],fork['exec_command'])
-    fp = Popen(fork['exec_command'],shell=True,cwd=os.getcwd() + '/tmp',stdin=pipe_stdin.fileno(),stdout=pipe_stdout.fileno(),stderr=pipe_stderr.fileno())
+    print('executing: ',fork['compile_command'],fork['exec_command'], 'memlimit', memlimit)
+    fp = Popen('ulimit -m ' + str(memlimit) + ';' + fork['exec_command'],shell=True,cwd=os.getcwd() + '/tmp',stdin=pipe_stdin.fileno(),stdout=pipe_stdout.fileno(),stderr=pipe_stderr.fileno())
     time.sleep(time_out / 1000)
     fp.poll()
     fp.kill()

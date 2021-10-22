@@ -41,7 +41,7 @@ function logout() {
   height: 100%;
   background-color: rgb(239, 239, 239);
 ">
-    <nav class="navbar navbar-expand-lg navbar-light bg-light" style="position: fixed;border:1px solid rgba(34,36,38,.15);box-shadow:0 1px 2px 0 rgba(34,36,38,.15);width: 100%;z-index: 114514;">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary" style="border:1px solid rgba(34,36,38,.15);box-shadow:2px 2px 2px 0 rgba(34,36,38,.15);width: 100%;z-index: 114514;">
         <div class="container-fluid">
           <img src="/src/logo.png" alt="" width="auto" height="50px" class="d-inline-block align-text-top">
           <a class="navbar-brand" href="/">{{config_file['server-name']}}</a>
@@ -68,10 +68,23 @@ function logout() {
               </li>
               {% else %}
               <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle" href="/user/{{ user['name'] }}" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                  {{ user['name'] }}
+                <a
+                  class="nav-link dropdown-toggle d-flex align-items-center"
+                  href="#"
+                  id="navbarDropdownMenuLink"
+                  role="button"
+                  data-mdb-toggle="dropdown"
+                  aria-expanded="false"
+                >
+                  <img
+                    src="/api?request=userImg&name={{ user['name'] }}"
+                    class="rounded-circle"
+                    height="22"
+                    alt=""
+                    loading="lazy"
+                  />
                 </a>
-                <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
                   {% if user['item']['premission'] == 0 %}
                   <li><a class="dropdown-item" href="/manage">服务器管理</a></li>
                   {% endif %}
@@ -88,7 +101,7 @@ function logout() {
           </div>
         </div>
     </nav>
-    <div style="width: 100%;height: 6rem;"></div>
+    <div style="width: 100%;height: 2rem;"></div>
     {{render_text}}
     <div style="width: 100%;height: 2rem;"></div>
       <div class="footer" style="margin: 0 auto;width: 100%;">

@@ -1,3 +1,4 @@
+from distutils.util import execute
 import multiprocessing as mp
 import os
 from sys import stdout
@@ -38,10 +39,13 @@ def task_processor(queue:mp.Queue):
                 status[status_queue_prefix] = 'Time Limit Exceed'
             else:
                 # 去除末尾多余字符
-                while execute_result[1][-1] == '\n' or execute_result[1][-1] == ' ':
-                    execute_result[1] = execute_result[1][0:-1]
-                while now_item[4][-1] == '\n' or now_item[4][-1] == ' ':
-                    now_item[4] = now_item[4][0:-1]
+                if execute_result[1] != "":
+                    print("not empty result:",execute_result)
+                    while execute_result[1][-1] == '\n' or execute_result[1][-1] == ' ':
+                        execute_result[1] = execute_result[1][0:-1]
+                if now_item[4] != "":
+                    while now_item[4][-1] == '\n' or now_item[4][-1] == ' ':
+                        now_item[4] = now_item[4][0:-1]
                 if len(execute_result[1]) != len(now_item[4]):
                     print(execute_result[1],'\n',now_item[4])
                     status[status_queue_prefix] = 'Wrong Answer at character ' + str(len(execute_result[1])) + ' of ' + str(len(now_item[4]))

@@ -50,7 +50,7 @@ def push_record(info:list):
         if description['solved-problems'].count(int(info[3])) == 0:
             description['solved-problems'].append(int(info[3]))
             web.users.set_user_descriptions(info[2],description)
-            web.ranking.init_ranking_table(info[2])
+            web.ranking.init_ranking_table()
     return jid
 
 init()

@@ -1,4 +1,4 @@
-import os,sys,json,hashlib,time,demjson,database.client,config.global_config
+import os,sys,json,hashlib,time,demjson,database.client,config.global_config,web.ranking
 
 
 def init():
@@ -11,7 +11,6 @@ def init():
 
 def get_user_item(username:str):
     result = database.client.item_operate('oj_users',username,'get')
-    print(result)
     if result[0] == 'FAIL': return None
     return result[1]
 
@@ -57,6 +56,8 @@ def new_user(username:str,level:int,pwd:str):
         'introduction': '',
         'solved-problems': []
     })
+    web.ranking.init_ranking_table()
+
 
 def remove_user(username:str):
     database.client.item_operate('oj_users',username,'delete')

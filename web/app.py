@@ -4,29 +4,34 @@ from flask.templating import render_template
 
 app = flask.Flask(__name__,static_url_path='/src')
 
+def get_bulletin_realid(index:int):
+    query_result = web.users.database.client.table_operate('oj_board','all')
+    return query_result[1]['data'][index]
+
 def get_bulletin(index:int):
-    query_result = web.users.database.client.item_operate('oj_board',index,'get')
+    query_result = web.users.database.client.table_operate('oj_board','all')
+    query_result = web.users.database.client.item_operate('oj_board',query_result[1]['data'][index],'get')
     if query_result[0] != 'OK': return None
     return query_result[1]
 
 def new_bulletin(title:str,content:str,time:str):
-    cnt = get_bulletin_count()
-    query_result = web.users.database.client.item_operate('oj_board',cnt,'new',{
+    query_result = web.users.database.client.item_operate('oj_board',title,'new',{
         'title': title,
         'content': content,
         'time': time
     })
     return query_result
 
-def edit_bulletin(id:int,title:str,content:str):
-    query_result = web.users.database.client.item_operate('oj_board',id,'change',{
+def edit_bulletin(id:int,title:str,content:str,time:str):
+    query_result = web.users.database.client.item_operate('oj_board',get_bulletin_realid(id),'change',{
         'title': title,
-        'content': content
+        'content': content,
+        'time': time
     })
     return query_result
 
 def remove_bulletin(index:int):
-    query_result = web.users.database.client.item_operate('oj_board',index,'delete')
+    query_result = web.users.database.client.item_operate('oj_board',get_bulletin_realid(index),'delete')
     if query_result[0] != 'OK': return None
     return query_result[1]
 
@@ -226,6 +231,14 @@ def index_of_api():
                 return {'status':'error', 'reason': 'username or password doesn\'t match'}
             flask.session['username'] = flask.request.args.get('usr')
             return {'status':'success'}
+        elif request_item == 'userImg':
+            name = flask.request.args.get('name')
+            if name == None or name == '': return {'status':'error','reason':'username is empty'}
+            item = web.users.get_user_item(name)
+            if item == None: return {'status':'error','reason':'user doesn\' t exist.'}
+            response = flask.make_response(base64.decodebytes(item['descriptions']['user-img'][23:].encode('utf-8')))
+            response.mimetype = 'image/jpeg'
+            return response
         elif request_item == 'signup':
             if flask.request.args.get('usr') == None or flask.request.args.get('pwd') == None or flask.request.args.get('invitecode') == None:
                 return {'status':'error', 'reason': 'username or password is empty.'}
@@ -336,7 +349,7 @@ def index_of_api():
                 return {'status':'error', 'reason': 'invalid problem format'}
             bulletin = json.loads(bulletin)
             id = int(flask.request.form.get('action'))
-            edit_bulletin(id,bulletin['title'],bulletin['content'])
+            edit_bulletin(id,bulletin['title'],bulletin['content'],time.strftime('%Y-%m-%d %H:%M:%S Localtime',time.localtime(time.time())))
             return {'status':'success'}
 
 @app.route('/login',methods = ["GET"])

@@ -21,7 +21,7 @@
         <tbody>
             {% for i in problems%}
             <tr>
-                <td><a href="/problems/{{problems.index(i)}}">{{i['name']}}</a></td>
+                <td><a href="/problems/{{now_index*10+ problems.index(i)}}">{{i['name']}}</a></td>
                 <td>{{i['tags']}}</td>
                 {% if user['item']['premission'] == 0 %}
                 <td>
