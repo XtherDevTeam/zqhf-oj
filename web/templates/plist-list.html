@@ -1,0 +1,82 @@
+
+<div class="container" style="margin: 0 auto;">
+    <br>
+    <div id="liveAlertPlaceholder"></div>
+    <h2>题单列表: 第{{ now_index }} / {{ total_index }}页</h2>
+    <br>
+    {% if user['item']['premission'] == 0 %}
+    <div class="btn-group" role="group">
+        <button type="button" class="btn btn-primary" onclick="new_list()">创建题单</button>
+    </div>
+    {% endif %}
+    <br>
+    <table class="table" style="width: 100%; table-layout: fixed; word-break: break-all;white-space: nowrap;">
+        <thead>
+            <tr>
+                <th>Title</th>
+                {% if user['item']['premission'] == 0 %}
+                <th>Actions</th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for i in lists %}
+            <tr>
+                <td><a href="/lists/{{i[0]}}">{{i[1]['name']}}</a></td>
+                {% if user['item']['premission'] == 0 %}
+                <td>
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-primary" onclick="remove_list('{{i[0]}}')">删除</button>
+                        <button type="button" class="btn btn-primary" onclick="edit_list('{{i[0]}}')">编辑</button>
+                    </div>
+                </td>
+                {% endif %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <center>
+    {% if now_index != 0 %}
+    <a href="/bulletins?index={{now_index - 1}}">Preview</a>·
+    {% else %}
+    Preview·
+    {% endif %}
+    {% for i in range(now_index,now_index + 10) %}
+    {% if i > total_index %}
+    {{i}}·
+    {% else %}
+    <a href="/bulletins?index={{i}}">{{i}}</a>·
+    {% endif %}
+    {% endfor %}
+    {% if now_index != total_index %}
+    <a href="/bulletins?index={{now_index + 1}}">Next</a>
+    {% else %}
+    Next
+    {% endif %}
+    </center>
+    <br>
+</div>
+
+<script>
+var alertPlaceholder = document.getElementById('liveAlertPlaceholder')
+function alert(message, type) {
+    var wrapper = document.createElement('div')
+    wrapper.innerHTML = '<div class="alert alert-' + type + ' alert-dismissible" role="alert">' + message + '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>'    
+    alertPlaceholder.append(wrapper)
+}
+function remove_list(pid) {
+    let xmlhttp = new XMLHttpRequest();
+    xmlhttp.open('GET','/api?request=remove_plist&id=' + pid,0)
+    xmlhttp.send();
+    if(JSON.parse(xmlhttp.responseText)["status"] != "success"){
+        alert(JSON.parse(xmlhttp.responseText)["reason"],"danger");
+    }
+    window.location = window.location;
+}
+function edit_list(pid) {
+    window.location = '/lists/' + pid + '/edit';
+}
+function new_list() {
+    window.location = '/lists/post';
+}
+</script>

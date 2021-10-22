@@ -47,6 +47,7 @@ function submit() {
         {
             "action":"upload",
             "problem_json": JSON.stringify({
+                'oldtitle': '{{origin["title"]}}',
                 'title': document.getElementById('title').value,
                 'content': encodeURIComponent(content_edit.getValue())
         })

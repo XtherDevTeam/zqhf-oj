@@ -38,7 +38,18 @@ def new_problem(problem_infomation:dict):
 def remove_problem(pid:int):
     database.client.item_operate('oj_problems',pid,'delete')
     infomation = database.client.table_operate('oj_problems','info')
-    print(infomation)
+    cnt = get_problems_count()
+    os.remove('judge/judge_files/' + str(pid) + '.in')
+    os.remove('judge/judge_files/' + str(pid) + '.out')
+    for i in range(pid+1,cnt):
+        if i == cnt - 1: 
+            database.client.item_operate('oj_problems',i,'delete')
+            break
+        data = get_problem(i)
+        edit_problem(i-1,data)
+        os.rename('judge/judge_files/' + str(i) + '.in','judge/judge_files/' + str(i-1) + '.in')
+        os.rename('judge/judge_files/' + str(i) + '.out','judge/judge_files/' + str(i-1) + '.out')
+
     if infomation[0] == 'FAIL': return None
     return infomation[1]['total_data_cnt'] - 1
 
@@ -52,7 +63,18 @@ def get_problems(from_pid:int,to_pid:int):
     for i in range(from_pid,to_pid):
         result.append(get_problem(i))
         if result[-1] == None:
-            return result
+            result.pop()
+            continue
+    return result
+
+def get_problem_names(from_pid:int,to_pid:int):
+    result = []
+    for i in range(from_pid,to_pid):
+        result.append(get_problem(i))
+        if result[-1] == None:
+            result.pop()
+            continue
+        result[-1] = result[-1]['name']
     return result
 
 def get_problems_per_page(prefix:int,count:int):

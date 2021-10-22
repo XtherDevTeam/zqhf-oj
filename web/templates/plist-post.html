@@ -1,0 +1,134 @@
+
+<div class="container" style="margin: 0 auto;">
+    <br>
+    {% if origin == None %}
+    <h2>创建题单</h2>
+    {% else %}
+    <h2>修改题单</h2>
+    {% endif %}
+    <br>
+    <h4>题单标题</h4>
+    <input id="title" name="title" type="text" class="form-control" value="" aria-describedby="basic-addon1"><br>
+    <h4>题单简介</h4>
+    <textarea id="description" name="description"></textarea><br>
+    <div id="new_to_list" style="width: 90%;">
+    <input id="new" name="new" type="number" class="form-control" value="" aria-describedby="basic-addon1" style="width: 80%;display: inline-block;">
+    <button type="button" class="btn btn-primary" onclick="newToList()" style="width: 15%;">新增</button>
+    </div>
+    <br>
+    <h4>题目列表</h4>
+    <table class="table" style="width: 100%; table-layout: fixed; word-break: break-all;white-space: nowrap;">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="insertToHere">
+            {% if list != None %}
+            {% for i in list['content'] %}
+            <tr id="{{i}}" class="table-item">
+                <td class="selected-id">{{i}}</li>
+                <td>
+                    <button type="button" class="btn btn-primary" onclick="removeFromList(this)">删除</button>
+                </td>
+            </tr>
+            {% endfor %}
+            {% endif %}
+        </tbody>
+    </table>
+    <br>
+    <a class="btn btn-primary" href="javascript:void(0);" onclick="submit();">上传</a>
+    <br>
+    <br>
+</div>
+<br>
+<script>
+var description_edit = CodeMirror.fromTextArea(document.getElementById("description"), {
+    mode: 'text/html',
+    lineNumbers: true
+});
+
+{% if origin != None %}
+document.getElementById('title').value = '{{list["name"]}}';
+description_edit.setValue( decodeURIComponent('{{list["description"|safe]}}'));
+{% endif %}
+
+function get_list_content(){
+    result = []
+    names = document.getElementsByClassName('selected-id');
+    for (let i = 0; i < names.length; i++) {
+        const element = parseInt(names[i].innerText);
+        result.push(element)
+    }
+    return result
+}
+
+function removeFromList(pthis){
+    pthis = document.getElementById(pthis.parentNode.parentNode.id)
+    $(pthis).css("background-color","#FF3700"); 
+    $(pthis).fadeOut(400, function(){ 
+        var trObj = document.getElementById(this.id);
+        document.getElementById("insertToHere").removeChild(trObj);
+    });
+}
+
+function newToList(){
+    if(document.getElementById('new').value == ""){
+        alert('请输入一个不为空的题号!')
+        return;
+    }
+    if(get_list_content().includes(parseInt(document.getElementById('new').value))){
+        alert('题号已存在!')
+        return;
+    }
+    var groupTable = $('#insertToHere');
+    var buildStr;
+    buildStr += '<tr id="' + new Date().getTime() + '">\n'
+    buildStr += '<div>\n'
+    buildStr += '<td class="selected-id">' + document.getElementById('new').value + '</td>\n'
+    buildStr += '<td>\n'
+    buildStr += '<button type="button" class="btn btn-primary" onclick="removeFromList(this)">删除</button>\n'
+    buildStr += '</td>\n'
+    buildStr += '</div>\n'
+    buildStr += '</tr>\n'
+    groupTable.append(buildStr)
+    document.getElementById('new').value = ''
+}
+
+function submit() {
+    //$http.post('/api?request=updateUserSpace', { 'description':description,'introduction':introduction });
+    {% if list != None %}
+    $.post('/api?request=editList',
+        {
+            "action":"{{list_id}}",
+            "json": JSON.stringify({
+            "info": {
+                'oldname': '{{list["name"]}}',
+                'name': document.getElementById('title').value,
+                'description': encodeURIComponent(description_edit.getValue()),
+                'content': get_list_content()
+            }
+        })
+        },function (){
+        alert('success');
+        window.location = '/lists';
+    },'json')
+    {% else %}
+    $.post('/api?request=postList',
+        {
+            "action":"upload",
+            "json": JSON.stringify({
+            "info": {
+                'name': document.getElementById('title').value,
+                'description': encodeURIComponent(description_edit.getValue()),
+                'content': get_list_content()
+            },
+        })
+        },function (){
+        alert('success');
+        window.location = '/lists';
+    },'json')
+    {% endif %}
+}
+</script>

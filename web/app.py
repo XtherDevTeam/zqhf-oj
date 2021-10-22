@@ -1,5 +1,5 @@
 import json
-import os,sys,flask,web.config,web.users,demjson,urllib.parse,judge.problems,judge.task,judge.records,judge.plugins,atexit,base64,time,web.ranking
+import os,sys,flask,web.config,web.users,demjson,urllib.parse,judge.problems,judge.task,judge.records,judge.plugins,atexit,base64,time,web.ranking,web.problemList
 from flask.templating import render_template
 
 app = flask.Flask(__name__,static_url_path='/src')
@@ -7,6 +7,10 @@ app = flask.Flask(__name__,static_url_path='/src')
 def get_bulletin_realid(index:int):
     query_result = web.users.database.client.table_operate('oj_board','all')
     return query_result[1]['data'][index]
+
+def get_bulletin_fakeid(index:str):
+    query_result = web.users.database.client.table_operate('oj_board','all')
+    return query_result[1]['data'].index(index)
 
 def get_bulletin(index:int):
     query_result = web.users.database.client.table_operate('oj_board','all')
@@ -87,17 +91,98 @@ def index():
         )
     )
 
+@app.route('/lists',methods = ["GET"])
+def index_of_problem_lists():
+    now_index = 0
+    if flask.request.args.get('index') != None: now_index = int(flask.request.args.get('index'))
+    prefix = now_index * 10
+    lists = web.problemList.get_problem_lists_per_page(prefix)
+    return createRootTemplate(
+        '题单列表',
+        flask.render_template(
+            'plist-list.html',
+            config_file = web.config.configf,
+            user = { 'name':flask.session.get('username'), 'item':web.users.get_user_item(flask.session.get('username'))  },
+            lists = lists,
+            now_index = now_index,
+            total_index = int(len(web.problemList.get_problem_list_names()) / 10),
+        )
+    )
+
+@app.route('/lists/post',methods = ["GET"])
+def index_of_problem_list_post():
+    logined = (flask.session.get('username') != None)
+    if not logined:
+        return flask.redirect('/login?reason=You are not signed in!')
+    
+    return createRootTemplate(
+        '创建题单',
+        flask.render_template(
+            'plist-post.html',
+            config_file = web.config.configf,
+            user = { 'name':flask.session.get('username'), 'item':web.users.get_user_item(flask.session.get('username'))  },
+            list = None,
+        )
+    )
+
+@app.route('/lists/<name>',methods = ["GET"])
+def index_of_problem_list(name):
+    _list = web.problemList.get_problem_list(web.problemList.id_to_name(int(name)))
+    if _list == None:
+        return createRootTemplate(
+            '错误',
+            flask.render_template(
+                'error.html',
+                config_file = web.config.configf,
+                reason = '题单' + name + '不存在'
+            )
+        )
+    return createRootTemplate(
+        name,
+        flask.render_template(
+            'plist-view.html',
+            config_file = web.config.configf,
+            user = { 'name':flask.session.get('username'), 'item':web.users.get_user_item(flask.session.get('username'))  },
+            list = _list,
+        )
+    )
+
+@app.route('/lists/<name>/edit',methods = ["GET"])
+def index_of_problem_list_edit(name):
+    logined = (flask.session.get('username') != None)
+    if not logined:
+        return flask.redirect('/login?reason=You are not signed in!')
+    
+    _list = web.problemList.get_problem_list(web.problemList.id_to_name(int(name)))
+    if _list == None:
+        return createRootTemplate(
+            '错误',
+            flask.render_template(
+                'error.html',
+                config_file = web.config.configf,
+                reason = '题单' + name + '不存在'
+            )
+        )
+    return createRootTemplate(
+        '编辑题单',
+        flask.render_template(
+            'plist-post.html',
+            config_file = web.config.configf,
+            user = { 'name':flask.session.get('username'), 'item':web.users.get_user_item(flask.session.get('username'))  },
+            list = _list,
+        )
+    )
+
 @app.route('/bulletins',methods = ["GET"])
 def index_of_bulletin_list():
     logined = (flask.session.get('username') != None)
     if not logined:
         return flask.redirect('/login?reason=You are not signed in!')
-    prefix = 0
-    if flask.request.args.get('index') != None: prefix = int(flask.request.args.get('index')) * 10
-    board = get_board(prefix)
-    board.reverse()
     now_index = 0
     if flask.request.args.get('index') != None: now_index = int(flask.request.args.get('index'))
+    prefix = now_index * 10
+    board = get_board(prefix)
+    board.reverse()
     return createRootTemplate(
         '公告列表',
         flask.render_template(
@@ -349,8 +434,29 @@ def index_of_api():
                 return {'status':'error', 'reason': 'invalid problem format'}
             bulletin = json.loads(bulletin)
             id = int(flask.request.form.get('action'))
-            edit_bulletin(id,bulletin['title'],bulletin['content'],time.strftime('%Y-%m-%d %H:%M:%S Localtime',time.localtime(time.time())))
+            new_bulletin(bulletin['title'],bulletin['content'],time.strftime('%Y-%m-%d %H:%M:%S Localtime',time.localtime(time.time())))
+            if bulletin['oldtitle'] != bulletin['newtitle']:
+                remove_bulletin(get_bulletin_fakeid(bulletin['oldtitle']))
             return {'status':'success'}
+        elif(request_item == 'postList'):
+            _list = flask.request.form.get('json')
+            if _list == None:
+                return {'status':'error', 'reason': 'invalid post format'}
+            _list1 = json.loads(_list)['info']
+            print(_list1)
+            web.problemList.new_problem_list(_list1['name'],flask.session.get('username'),_list1['description'],_list1['content'])
+            return {'status':'success'}
+
+        elif(request_item == 'editList'):
+            _list = flask.request.form.get('json')
+            if _list == None:
+                return {'status':'error', 'reason': 'invalid post format'}
+            _list1 = json.loads(_list)['info']
+            web.problemList.new_problem_list(_list1['name'],flask.session.get('username'),_list1['description'],_list1['content'])
+            if _list1['oldname'] != _list1['name']: web.problemList.remove_problem_list(_list1['oldname'])
+
+            return {'status':'success'}
+
 
 @app.route('/login',methods = ["GET"])
 def index_of_login():
