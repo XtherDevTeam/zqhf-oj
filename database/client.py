@@ -21,11 +21,18 @@ def recv():
             result += now
             ranIntoInput = True
         except BlockingIOError as e:
-            if(time.time() - begin_recv() > 2):
+            if(time.time() - begin_recv > 2):
                 print('recv timed out.')
                 break
             if ranIntoInput: break
     return result
+
+def clean_buffer(client:socket.socket):
+    while True:
+        try:
+            client.recv(1)
+        except BlockingIOError as e:
+            if e.errno == 11: break
 
 def recv_nbytes(n:int):
     global client
@@ -52,13 +59,15 @@ def secure_recv(sendMessageWhileMd5Mismatch:bytes):
     global client
     md5 = recv_nbytes(32)
     if md5 == None: raise Exception(("FAIL","Invalid data format"))
-    md5 = md5.decode('utf-8')
+    try:
+        md5 = md5.decode('utf-8')
+    except Exception: pass
     print('data:',md5)
     data = recv()
     if(sendMessageWhileMd5Mismatch==bytes()): return data
     while hashlib.md5(data).hexdigest() != md5:
         print("md5 mismatch:",hashlib.md5(data).hexdigest(),md5 )
-        recv()
+        clean_buffer(client)
         secure_send(sendMessageWhileMd5Mismatch)
         md5 = recv_nbytes(32)
         try:
@@ -70,6 +79,7 @@ def secure_recv(sendMessageWhileMd5Mismatch:bytes):
     
 
 def secure_send(data:bytes):
+    clean_buffer(client) # 清理缓冲区未接受的数据
     client.send(hashlib.md5(data).hexdigest().encode('utf-8'))
     client.send(data)
 
