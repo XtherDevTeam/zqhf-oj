@@ -19,6 +19,7 @@
 **Setup:**
 
 - 安装Python3
+
   **Debian-like系统** `sudo apt install python3`
 
   **CentOS系统**
