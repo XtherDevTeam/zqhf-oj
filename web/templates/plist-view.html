@@ -36,5 +36,5 @@ function alert(message, type) {
     wrapper.innerHTML = '<div class="alert alert-' + type + ' alert-dismissible" role="alert">' + message + '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>'    
     alertPlaceholder.append(wrapper)
 }
-document.getElementById('description').innerHTML = decodeURIComponent('{{list["description"]|safe}}');
+document.getElementById('description').innerHTML = decodeURIComponent("{{list['description']|safe}}");
 </script>

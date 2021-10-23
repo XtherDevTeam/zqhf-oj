@@ -51,7 +51,7 @@ var description_edit = CodeMirror.fromTextArea(document.getElementById("descript
 
 {% if list != None %}
 document.getElementById('title').value = '{{list["name"]}}';
-description_edit.setValue( decodeURIComponent('{{list["description"|safe]}}'));
+description_edit.setValue( decodeURIComponent("{{list['description'|safe]}}"));
 {% endif %}
 
 function get_list_content(){

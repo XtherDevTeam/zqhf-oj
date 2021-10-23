@@ -33,7 +33,7 @@
     <br>
 </div>
 <script>
-document.getElementById('description').innerHTML = decodeURIComponent('{{problem["description"]|safe}}');
+document.getElementById('description').innerHTML = decodeURIComponent("{{problem['description']|safe}}");
 function goto_post() {
     window.location += '/post'
 }

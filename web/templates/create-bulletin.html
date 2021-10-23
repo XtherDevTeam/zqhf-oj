@@ -24,7 +24,7 @@ var content_edit = CodeMirror.fromTextArea(document.getElementById("content"), {
 
 {% if origin != None %}
 document.getElementById('title').value = '{{origin["title"]}}';
-content_edit.setValue( decodeURIComponent('{{origin["content"|safe]}}'));
+content_edit.setValue( decodeURIComponent("{{origin['content'|safe]}}"));
 {% endif %}
 
 function submit() {

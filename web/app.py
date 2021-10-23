@@ -703,7 +703,7 @@ def index_of_judge_record():
             'records.html',
             config_file = web.config.configf,
             now_index = int(prefix / 10),
-            total_index = int(len(records) / 10),
+            total_index = int(judge.records.get_record_count() / 10),
             records = records_per_page
         )
     )

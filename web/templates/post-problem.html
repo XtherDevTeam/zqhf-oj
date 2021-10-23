@@ -55,10 +55,10 @@ var description_edit = CodeMirror.fromTextArea(document.getElementById("descript
 
 {% if origin != None %}
 document.getElementById('title').value = '{{origin["name"]}}';
-description_edit.setValue( decodeURIComponent('{{origin["description"|safe]}}'));
+description_edit.setValue( decodeURIComponent("{{origin['description']|safe}}"));
 document.getElementById('tags').value = '{{tags|safe}}';
-document.getElementById('timelimit').value = '{{origin["time_limit"|safe]}}';
-document.getElementById('memlimit').value = '{{origin["mem_limit"|safe]}}';
+document.getElementById('timelimit').value = '{{origin["time_limit"]|safe}}';
+document.getElementById('memlimit').value = '{{origin["mem_limit"]|safe}}';
 eg_in_edit.setValue( decodeURIComponent('{{input_examples|safe}}') );
 eg_out_edit.setValue( decodeURIComponent('{{output_examples|safe}}') );
 input_edit.setValue( decodeURIComponent("{{judge_file[0]}}") )

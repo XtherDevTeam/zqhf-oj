@@ -22,9 +22,9 @@ def get_record(jid:int):
 
 def get_records_per_page(prefix:int):
     query_info = database.client.table_operate('oj_records','info')
-    print(query_info)
+    print(query_info,prefix,10)
     result = []
-    for i in range(query_info[1]['total_data_cnt'] - prefix - 10,query_info[1]['total_data_cnt']):
+    for i in range(query_info[1]['total_data_cnt'] - prefix - 10,query_info[1]['total_data_cnt'] - prefix):
         if i < 0: continue
         if i == query_info[1]['total_data_cnt']: break
         temp = get_record(i)
@@ -37,6 +37,7 @@ def get_records_per_page(prefix:int):
 
 def get_record_count():
     query_info = database.client.table_operate('oj_records','info')
+    print(query_info)
     return query_info[1]['total_data_cnt']
 
 def push_record(info:list):

@@ -12,3 +12,11 @@
     display: inline-block;
     color: #999;
 }
+@font-face {
+    font-family: 'Fira Code Light';
+    font-style: normal;
+    src: url(/src/FiraCode-Light.ttf);
+}
+.CodeMirror{
+    font-family: 'Fira Code Light';
+}

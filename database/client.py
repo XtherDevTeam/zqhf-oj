@@ -1,6 +1,7 @@
 import pickle
 import socket
 import hashlib
+import time
 
 client = socket.socket
 
@@ -11,6 +12,7 @@ def recv():
     global client
     ranIntoInput = False
     result = bytes()
+    begin_recv = time.time()
     while True:
         try:
             now = client.recv(1024)
@@ -19,6 +21,9 @@ def recv():
             result += now
             ranIntoInput = True
         except BlockingIOError as e:
+            if(time.time() - begin_recv() > 2):
+                print('recv timed out.')
+                break
             if ranIntoInput: break
     return result
 
@@ -53,9 +58,12 @@ def secure_recv(sendMessageWhileMd5Mismatch:bytes):
     if(sendMessageWhileMd5Mismatch==bytes()): return data
     while hashlib.md5(data).hexdigest() != md5:
         print("md5 mismatch:",hashlib.md5(data).hexdigest(),md5 )
+        recv()
         secure_send(sendMessageWhileMd5Mismatch)
         md5 = recv_nbytes(32)
-        md5 = md5.decode('utf-8')
+        try:
+            md5 = md5.decode('utf-8')
+        except Exception: pass
         if md5 == None: raise Exception(("FAIL","Invalid data format"))
         data = recv()
     return data
