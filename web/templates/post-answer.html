@@ -1,16 +1,37 @@
+<style>
+.lang-selector{
+    background-color: white;
+    transition: all 0.5s; 
+}
+.lang-selector:hover{
+    background-color: rgba(0,0,0,.02);
+}
+.lang-selector-active{
+    background: rgba(0,0,0,.05);
+}
+</style>
 
 <div class="container" style="margin: 0 auto;height: 100%;">
     <br>
     <h4>提交答案</h4>
     <br>
-    <ul class="list-group" style="float: left;width: 20%;height: 80%;overflow-y: scroll;background-color: white;">
+    <ol class="list-group" style="width: 20%;height: 80%;float: left;border: 1px solid rgba(0, 0, 0, 0.25);border-radius: unset;">
         {% for i in support_lang %}
-        <a class="list-group-item" onclick="switchLanguage(&apos;{{i['name']}}&apos;);" href="javascript:void(0);">
-            {{i['name']}}<br>
-            <em>{{i['descriptions']}}</em>
-        </a>
+            <a id="selector-{{i['name']}}" class="lang-selector list-group-item d-flex justify-content-between align-items-start"
+            style="
+                border: none;overflow-x: hidden;
+                border-top-left-radius: unset;
+                border-top-right-radius: unset;
+                border-bottom-left-radius: unset;
+                border-bottom-right-radius: unset;
+            " onclick="switchLanguage(&apos;{{i['name']}}&apos;);" href="javascript:void(0);">
+                <div class="ms-2 me-auto">
+                    <div class="fw-normal">{{i['name']}}<br></div>
+                    <span style="color: gray;font-size: 0.7rem;">{{i['descriptions']}}</span>
+                </div>
+            </a>
         {% endfor %}
-    </ul>
+    </ol>
     <br>
     <textarea id="code-input"></textarea>
     <a class="btn btn-primary" href="javascript:void(0);" onclick="submit();">上传</a><br>
@@ -19,13 +40,14 @@
 
 <script>
 var lang_mode = {{support_lang_json|safe}};
-var cur_lang = 'Python3';
+var cur_lang = 'C';
+document.getElementById('selector-'+cur_lang).classList.add('lang-selector-active');
 var input_edit = CodeMirror.fromTextArea(document.getElementById("code-input"), {
     mode: get_lang_detail(cur_lang)['file-type'],
     lineNumbers: true
 });
 input_edit.setSize('75%','80%');
-document.getElementsByClassName('CodeMirror')[0].style.top = "-1.5rem";
+switchLanguage(cur_lang); // refresh view
 function get_lang_detail(lang) {
     for (let i = 0; i < lang_mode.length; i++) {
         const element = lang_mode[i];
@@ -34,11 +56,17 @@ function get_lang_detail(lang) {
     return null;
 }
 function switchLanguage(lang) {
+    document.getElementById('selector-'+cur_lang).classList.remove('lang-selector-active')
     cur_lang = lang;
     detail = get_lang_detail(lang);
     input_edit.setOption("mode", detail['file-type'])
     input_edit.setSize('75%','80%');
-    document.getElementsByClassName('CodeMirror')[0].style.top = "-1.5rem";
+    document.getElementsByClassName('CodeMirror')[0].style.top = "-25.5px"; // top: -25.5px;
+    document.getElementsByClassName('CodeMirror')[0].style.left = '-1px';
+    //border: 1px solid rgba(0, 0, 0, 0.25);
+    document.getElementsByClassName('CodeMirror')[0].style.border = '1px solid rgba(0, 0, 0, 0.25)';
+
+    document.getElementById('selector-'+cur_lang).classList.add('lang-selector-active');
 }
 function submit() {
     code = input_edit.getValue();

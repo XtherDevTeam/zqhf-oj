@@ -103,5 +103,15 @@ def createJudgeFile(pid:int,input:str,output:str):
     with open('judge/judge_files/' + pid + '.out','w+') as file:
         file.write(output)
     return True
-    
+
+def get_match_tags_problems(tag:str):
+    result = []
+    for i in range(0,get_problems_count()):
+        query = get_problem(i)
+        if query == None: continue
+        query['id'] = i
+        if query['tags'].count(tag) >= 1:
+            result.append(query)
+    return result
+
 init()

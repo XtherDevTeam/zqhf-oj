@@ -2,11 +2,7 @@
 <div class="container" style="margin: 0 auto;">
     <br>
     <div id="liveAlertPlaceholder"></div>
-    <h2>题目列表: 第{{ now_index }} / {{ total_index }}页</h2>
-    <br>
-    <div class="btn-group" role="group">
-        <button type="button" class="btn btn-primary" onclick="new_problem()">创建题目</button>
-    </div>
+    <h2>查询标签: {{tag}}</h2>
     <br>
     <table class="table" style="width: 100%; table-layout: fixed; word-break: break-all;white-space: nowrap;">
         <thead>
@@ -21,7 +17,7 @@
         <tbody>
             {% for i in problems%}
             <tr>
-                <td><a href="/problems/{{now_index*10+ problems.index(i)}}">{{i['name']}}</a></td>
+                <td><a href="/problems/{{i['id']}}">{{i['name']}}</a></td>
                 <td><h6>
                 {% for j in range(0,5) %}
                 <a href="/tags/{{i['tags'][j]}}"><span class="badge bg-primary">{{i['tags'][j]}}</span></a>
@@ -39,25 +35,6 @@
             {% endfor %}
         </tbody>
     </table>
-    <center>
-    {% if now_index != 0 %}
-    <a href="/problems?index={{now_index - 1}}">Preview</a>·
-    {% else %}
-    Preview·
-    {% endif %}
-    {% for i in range(now_index,now_index + 10) %}
-    {% if i > total_index %}
-    {{i}}·
-    {% else %}
-    <a href="/problems?index={{i}}">{{i}}</a>·
-    {% endif %}
-    {% endfor %}
-    {% if now_index != total_index %}
-    <a href="/problems?index={{now_index + 1}}">Next</a>
-    {% else %}
-    Next
-    {% endif %}
-    </center>
     <br>
 </div>
 

@@ -232,6 +232,20 @@ def index_of_edit_bulletin(id):
         )
     )
 
+@app.route('/tags/<tag>')
+def index_of_tags_matcher(tag):
+    problems = judge.problems.get_match_tags_problems(tag)
+    return createRootTemplate(
+        '查询标签:' + tag,
+        flask.render_template(
+            'tagsMatcher.html',
+            user = { 'name':flask.session.get('username'), 'item':web.users.get_user_item(flask.session.get('username'))  },
+            config_file = web.config.configf,
+            problems = problems,
+            tag = tag
+        )
+    )
+
 @app.route('/bulletins/<id>',methods = ["GET"])
 def index_of_show_bulletin(id):
     bulletin = get_bulletin(int(id))
