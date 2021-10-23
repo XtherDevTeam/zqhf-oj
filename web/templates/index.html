@@ -10,7 +10,6 @@
     float: left;
     margin-left: 10px;
     width: 15%;
-    text-align: center;
 }
 .font-small{
     font-size: 13px;
@@ -64,14 +63,24 @@
         </div>
     </div>
 
-    <div class="container side-panel">
-        <br>
-        <img src="/api?request=userImg&name={{ user['name'] }}" style="width: 100px;border-radius: 50%;">
-        <h4>{{user['name']}}</h4>
-        <div class="font-small" style="display: inline-block;width: 90%;height: 16px;overflow: hidden;word-break: break-all;max-lines: 1;">{{user['item']['descriptions']['description']}}</div><br>
-        <div class="font-small" style="display: inline-block;width: 90%;height: 16px;overflow: hidden;word-break: break-all;max-lines: 1;">join-time: {{user['item']['descriptions']['join-time']}}</div><br>
-        <div class="font-small" style="display: inline-block;width: 90%;height: 16px;overflow: hidden;word-break: break-all;max-lines: 1;">Solved: {{user['item']['descriptions']['solved-problems']}}</div><br>
-        <div class="font-small" style="display: inline-block;width: 90%;height: 16px;overflow: hidden;word-break: break-all;max-lines: 1;">Ranking: {{user['item']['ranking']+1}}</div><br>
-        <br>
+    <div class="side-panel">
+        <div class="container" style="width: 100%;position: relative;text-align: center;">
+            <br>
+            <img src="/api?request=userImg&name={{ user['name'] }}" style="width: 100px;border-radius: 50%;">
+            <h4>{{user['name']}}</h4>
+            <div class="font-small" style="display: inline-block;width: 90%;height: 16px;overflow: hidden;word-break: break-all;max-lines: 1;">{{user['item']['descriptions']['description']}}</div><br>
+            <div class="font-small" style="display: inline-block;width: 90%;height: 16px;overflow: hidden;word-break: break-all;max-lines: 1;">join-time: {{user['item']['descriptions']['join-time']}}</div><br>
+            <div class="font-small" style="display: inline-block;width: 90%;height: 16px;overflow: hidden;word-break: break-all;max-lines: 1;">Solved: {{user['item']['descriptions']['solved-problems']}}</div><br>
+            <div class="font-small" style="display: inline-block;width: 90%;height: 16px;overflow: hidden;word-break: break-all;max-lines: 1;">Ranking: {{user['item']['ranking']+1}}</div><br>
+            <br>
+        </div>
+        <div class="container" style="width: 100%;top: 10px;position: relative;">
+            <br>
+            <h5>友情链接</h5>
+            {% for i in config_file['friend-urls'] %}
+            <li style="position: relative;left: 20px;"><a href="{{i[1]}}">{{i[0]}}</a><br></li>
+            {% endfor %}
+            <br>
+        </div>
     </div>
 </div>

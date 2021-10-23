@@ -1,7 +1,7 @@
 
 <div class="container" style="margin: 0 auto;">
     <br>
-    {% if origin == None %}
+    {% if list == None %}
     <h2>创建题单</h2>
     {% else %}
     <h2>修改题单</h2>
@@ -49,7 +49,7 @@ var description_edit = CodeMirror.fromTextArea(document.getElementById("descript
     lineNumbers: true
 });
 
-{% if origin != None %}
+{% if list != None %}
 document.getElementById('title').value = '{{list["name"]}}';
 description_edit.setValue( decodeURIComponent('{{list["description"|safe]}}'));
 {% endif %}

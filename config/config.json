@@ -9,5 +9,11 @@
         "C++14",
         "Python3",
         "Xlang"
+    ],
+    "friend-urls": [
+        ["学校官网","https://www.zqhfxx.com/"],
+        ["洛谷","https://www.luogu.com.cn/"],
+        ["OI Wiki","https://oi-wiki.org/"],
+        ["LibreOJ","https://loj.ac/"]
     ]
 }
