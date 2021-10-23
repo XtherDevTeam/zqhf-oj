@@ -138,12 +138,13 @@ def index_of_problem_list(name):
             )
         )
     return createRootTemplate(
-        name,
+        _list['name'],
         flask.render_template(
             'plist-view.html',
             config_file = web.config.configf,
             user = { 'name':flask.session.get('username'), 'item':web.users.get_user_item(flask.session.get('username'))  },
             list = _list,
+            problems = judge.problems.get_selected_problems_detail(_list['content'])
         )
     )
 
@@ -365,6 +366,12 @@ def index_of_api():
             remove_bulletin(int(flask.request.args.get('id')))
             
             return {'status':'success'}
+        elif request_item == 'remove_plist':
+            if flask.request.args.get('id') == None or int(flask.request.args.get('id')) > get_bulletin_count():
+                return {'status':'error', 'reason':'invalid or empty bulletin id.'}
+            web.problemList.remove_problem_list(web.problemList.id_to_name(int(flask.request.args.get('id'))))
+            return {'status':'success'}
+            
     elif flask.request.method == "POST":
         request_item = flask.request.args.get('request')
         if request_item == None:

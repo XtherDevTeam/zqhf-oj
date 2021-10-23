@@ -13,7 +13,8 @@
     <table class="table" style="width: 100%; table-layout: fixed; word-break: break-all;white-space: nowrap;">
         <thead>
             <tr>
-                <th>Title</th>
+                <th style="width: 20%;overflow: hidden;">Title</th>
+                <th style="width: 40%;overflow: hidden;">Description</th>
                 {% if user['item']['premission'] == 0 %}
                 <th>Actions</th>
                 {% endif %}
@@ -22,7 +23,8 @@
         <tbody>
             {% for i in lists %}
             <tr>
-                <td><a href="/lists/{{i[0]}}">{{i[1]['name']}}</a></td>
+                <td><a href="/lists/{{i[0]}}" style="overflow: hidden;">{{i[1]['name']}}</a></td>
+                <td class="description-view" id="{{i[1]['name']}}" style="overflow: hidden;">{{i[1]['description']}}</td>
                 {% if user['item']['premission'] == 0 %}
                 <td>
                     <div class="btn-group" role="group">
@@ -79,4 +81,11 @@ function edit_list(pid) {
 function new_list() {
     window.location = '/lists/post';
 }
+function decodeAllDescriptions(){
+    toDecode = document.getElementsByClassName('description-view');
+    for (let i = 0; i < toDecode.length; i++) {
+        document.getElementById(toDecode[i].id).innerHTML = decodeURIComponent(toDecode[i].innerHTML);
+    }
+}
+decodeAllDescriptions()
 </script>

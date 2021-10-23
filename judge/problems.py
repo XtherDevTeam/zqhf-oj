@@ -114,4 +114,13 @@ def get_match_tags_problems(tag:str):
             result.append(query)
     return result
 
+def get_selected_problems_detail(pids:list):
+    result = []
+    for i in pids:
+        query = get_problem(i)
+        if query == None: continue
+        query['id'] = i
+        result.append(query)
+    return result
+
 init()

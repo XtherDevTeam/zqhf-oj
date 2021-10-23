@@ -1,0 +1,40 @@
+
+<div class="container" style="margin: 0 auto;">
+    <br>
+    <div id="liveAlertPlaceholder"></div>
+    <h2>{{list['name']}}</h2>
+    <h4>介绍</h4>
+    <div id="description"></div>
+    <br>
+    <table class="table" style="width: 100%; table-layout: fixed; word-break: break-all;white-space: nowrap;">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Tags</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for i in problems%}
+            <tr>
+                <td><a href="/problems/{{i['id']}}">{{i['name']}}</a></td>
+                <td><h6>
+                {% for j in range(0,5) %}
+                <a href="/tags/{{i['tags'][j]}}"><span class="badge bg-primary">{{i['tags'][j]}}</span></a>
+                {% endfor %}
+                </h6></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <br>
+</div>
+
+<script>
+var alertPlaceholder = document.getElementById('liveAlertPlaceholder')
+function alert(message, type) {
+    var wrapper = document.createElement('div')
+    wrapper.innerHTML = '<div class="alert alert-' + type + ' alert-dismissible" role="alert">' + message + '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>'    
+    alertPlaceholder.append(wrapper)
+}
+document.getElementById('description').innerHTML = decodeURIComponent('{{list["description"]|safe}}');
+</script>
