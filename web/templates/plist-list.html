@@ -37,25 +37,6 @@
             {% endfor %}
         </tbody>
     </table>
-    <center>
-    {% if now_index != 0 %}
-    <a href="/bulletins?index={{now_index - 1}}">Preview</a>·
-    {% else %}
-    Preview·
-    {% endif %}
-    {% for i in range(now_index,now_index + 10) %}
-    {% if i > total_index %}
-    {{i}}·
-    {% else %}
-    <a href="/bulletins?index={{i}}">{{i}}</a>·
-    {% endif %}
-    {% endfor %}
-    {% if now_index != total_index %}
-    <a href="/bulletins?index={{now_index + 1}}">Next</a>
-    {% else %}
-    Next
-    {% endif %}
-    </center>
     <br>
 </div>
 

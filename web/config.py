@@ -14,6 +14,7 @@ def open_config_file():
     configf = temp
 
 def get_config_value(key:str):
+    open_config_file()
     return configf[key]
 
 def set_config_value(key:str,item):
