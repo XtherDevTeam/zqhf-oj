@@ -124,7 +124,7 @@ auth
 need auth
 data: 3e65bd2f3b04b7df273f724da6f7d6a9
 True         
->>> database.client.table_operate('oj_articles','new')
+>>> database.client.table_operate('oj_article','new')
 data: 00f78e0c97ca91a363ce10c3097f4fce
 ('OK', None)
 >>> 
