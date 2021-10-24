@@ -46,7 +46,7 @@ def task_processor(queue:mp.Queue):
             elif execute_result[0] == 'RE':
                 status[status_queue_prefix] = 'Runtime Error'
             elif execute_result[0] == 'TLE':
-                status[status_queue_prefix] = 'Time Limit Exceed'
+                status[status_queue_prefix] = 'Time Limit Exceeded'
             else:
                 # 去除末尾多余字符
                 if execute_result[1] != "":
