@@ -1,4 +1,4 @@
-import os,sys,json,urllib.parse,database.client,config.global_config
+import os,sys,json,urllib.parse,database.client,config.global_config,markdown
 
 def init():
     print(__name__,'opened connection: ',database.client.open_connection(
@@ -11,7 +11,11 @@ def init():
 def get_problem(pid:int):
     data = database.client.item_operate('oj_problems',pid,'get')
     if data[0]== 'FAIL': return None
-    else: return data[1]
+    try:
+        data[1]['description-html'] = markdown.markdown(urllib.parse.unquote(data[1]['description']))
+    except Exception:
+        data[1]['description-html'] = ''
+    return data[1]
 
 def get_judge_file(pid:int):
     data = database.client.item_operate('oj_problems',pid,'get')

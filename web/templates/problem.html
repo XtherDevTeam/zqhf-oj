@@ -2,10 +2,12 @@
 <div class="container" style="margin: 0 auto;">
     <br>
     <h2>{{problem["name"]}}</h2>
-    <i class="fas fa-stopwatch"></i> {{problem["time_limit"]}}ms <i class="fas fa-memory"></i> {{problem["mem_limit"]}}KB<br>
+    <i class="fas fa-stopwatch"></i> {{problem["time_limit"]}}ms <i class="fas fa-memory"></i> {{problem["mem_limit"]}}KB <i class="fas fa-user-edit"></i> {{problem["author"]}}<br>
     <br>
     <h4>题目介绍</h4>
-    <div id="description" style="display: inline;"></div><br><br>
+    <div id="description" style="display: inline;">
+    {{problem["description-html"]|safe}}
+    </div><br><br>
     <h4>样例</h4>
     {% if example_count == 0 %}
     无<br>
@@ -33,7 +35,7 @@
     <br>
 </div>
 <script>
-document.getElementById('description').innerHTML = decodeURIComponent("{{problem['description']|safe}}");
+// document.getElementById('description').innerHTML = decodeURIComponent("{{problem['description']|safe}}");
 function goto_post() {
     window.location += '/post'
 }

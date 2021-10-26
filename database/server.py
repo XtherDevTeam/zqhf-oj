@@ -1,8 +1,20 @@
 import pickle,socket,database.authlib,database.dbapis,threading,multiprocessing,traceback,hashlib
+from timeit import repeat
 
 server = socket.socket
 clientStatus = {}
 threadpool = {}
+
+def make_repeat(_str:str,c:int = 32):
+    s = ''
+    for i in range(0,c):
+        s+=_str
+    return s
+
+def make_resend_packet():
+    hash = make_repeat('f',32) + '1145141919810'
+    return hash.encode('utf-8')
+    
 
 def secure_send(client:socket.socket,data:bytes):
     client.send(hashlib.md5(data).hexdigest().encode('utf-8'))
@@ -49,14 +61,13 @@ def secure_recv(client:socket.socket):
     if md5 == None: raise Exception(("FAIL","Invalid data format"))
     md5.decode('utf-8')
     data = recv(client)
-    """
     while hashlib.md5(data).hexdigest() != md5:
-        server.send(sendMessageWhileMd5Mismatch)
+        server.send(make_resend_packet())
         md5 = recv_nbytes(32)
         if md5 == None: raise Exception(("FAIL","Invalid data format"))
         md5.decode('utf-8')
         data = recv()
-        """
+        
     return data
     
 

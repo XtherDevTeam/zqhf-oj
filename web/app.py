@@ -1,5 +1,5 @@
 import json
-import os,sys,flask,web.config,web.users,demjson,urllib.parse,judge.problems,judge.task,judge.records,judge.plugins,atexit,base64,time,web.ranking,web.problemList
+import os,sys,flask,web.config,web.users,demjson,urllib.parse,judge.problems,judge.task,judge.records,judge.plugins,atexit,base64,time,web.ranking,web.problemList,markdown
 from flask.templating import render_template
 
 app = flask.Flask(__name__,static_url_path='/src')
@@ -16,6 +16,10 @@ def get_bulletin(index:int):
     query_result = web.users.database.client.table_operate('oj_board','all')
     query_result = web.users.database.client.item_operate('oj_board',query_result[1]['data'][index],'get')
     if query_result[0] != 'OK': return None
+    try:
+        query_result[1]['content-html'] = markdown.markdown(urllib.parse.unquote(query_result['content']))
+    except Exception:
+        query_result[1]['content-html'] = ''
     return query_result[1]
 
 def new_bulletin(title:str,content:str,time:str):
