@@ -33,6 +33,6 @@ function submit() {
 }
 
 document.getElementById('username').value = "{{user['name']}}";
-document.getElementById('description').value = "{{user['item']['descriptions']['description']}}";
+document.getElementById('description').value = "{{user['item']['descriptions']['description']|safe}}";
 editor.setValue(decodeURIComponent("{{user['item']['descriptions']['introduction']|safe}}"));
 </script>

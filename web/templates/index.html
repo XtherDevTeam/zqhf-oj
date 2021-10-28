@@ -68,7 +68,7 @@
             <br>
             <img src="/api?request=userImg&name={{ user['name'] }}" style="width: 100px;border-radius: 50%;">
             <h4>{{user['name']}}</h4>
-            <div class="font-small" style="display: inline-block;width: 90%;height: 16px;overflow: hidden;word-break: break-all;max-lines: 1;">{{user['item']['descriptions']['description']}}</div><br>
+            <div class="font-small" style="display: inline-block;width: 90%;height: 16px;overflow: hidden;word-break: break-all;max-lines: 1;">{{user['item']['descriptions']['description']|safe}}</div><br>
             <div class="font-small" style="display: inline-block;width: 90%;height: 16px;overflow: hidden;word-break: break-all;max-lines: 1;">join-time: {{user['item']['descriptions']['join-time']}}</div><br>
             <div class="font-small" style="display: inline-block;width: 90%;height: 16px;overflow: hidden;word-break: break-all;max-lines: 1;">Solved: {{user['item']['descriptions']['solved-problems']}}</div><br>
             <div class="font-small" style="display: inline-block;width: 90%;height: 16px;overflow: hidden;word-break: break-all;max-lines: 1;">Ranking: {{user['item']['ranking']+1}}</div><br>

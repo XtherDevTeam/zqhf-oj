@@ -34,6 +34,13 @@ def recv(client:socket.socket):
             if ranIntoInput: break
     return result
 
+def clean_buffer(client:socket.socket):
+    while True:
+        try:
+            client.recv(1)
+        except BlockingIOError as e:
+            if e.errno == 11: break
+
 def recv_nbytes(client:socket.socket,n:int):
     #global client
     ranIntoInput = False
@@ -59,13 +66,20 @@ def secure_recv(client:socket.socket):
     global server
     md5 = recv_nbytes(client,32)
     if md5 == None: raise Exception(("FAIL","Invalid data format"))
-    md5.decode('utf-8')
+    try:
+        md5 = md5.decode('utf-8')
+    except Exception:
+        pass
     data = recv(client)
     while hashlib.md5(data).hexdigest() != md5:
-        server.send(make_resend_packet())
+        clean_buffer(client)
+        client.send(make_resend_packet())
         md5 = recv_nbytes(32)
         if md5 == None: raise Exception(("FAIL","Invalid data format"))
-        md5.decode('utf-8')
+        try:
+            md5 = md5.decode('utf-8')
+        except Exception:
+            pass
         data = recv()
         
     return data
