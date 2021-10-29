@@ -17,7 +17,7 @@ def init_ranking_table():
     sorted = []
     for i in users:
         this_user = database.client.item_operate('oj_users',i,'get')[1]
-        print(i,this_user)
+        # print(i,this_user)
         del this_user['descriptions']['introduction']
         del this_user['descriptions']['user-img']
         solved = len(this_user['descriptions']['solved-problems'])
@@ -43,12 +43,12 @@ def init_ranking_table():
 
     users = {}
     index = 0
-    print(sorted)
+    # print(sorted)
     for i in sorted:
-        print(i)
+        # print(i)
         database.client.item_operate('oj_ranking', index, 'new')
         database.client.item_operate('oj_ranking', index, 'change', i)
-        print(database.client.table_operate('oj_ranking','all')[1]['data'])
+        # print(database.client.table_operate('oj_ranking','all')[1]['data'])
 
         result = database.client.item_operate('oj_users', i['name'], 'get')
         result = result[1]

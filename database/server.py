@@ -1,5 +1,4 @@
-import pickle,socket,database.authlib,database.dbapis,threading,multiprocessing,traceback,hashlib
-from timeit import repeat
+import pickle,socket,database.authlib,database.dbapis,threading,traceback,hashlib,time
 
 server = socket.socket
 clientStatus = {}
@@ -22,6 +21,7 @@ def secure_send(client:socket.socket,data:bytes):
 
 def recv(client:socket.socket):
     ranIntoInput = False
+    begin_time = time.time()
     result = bytes()
     while True:
         try:
@@ -31,6 +31,7 @@ def recv(client:socket.socket):
             result += now
             ranIntoInput = True
         except BlockingIOError as e:
+            if int(time.time()) - int(begin_time) > 1: break
             if ranIntoInput: break
     return result
 
@@ -39,11 +40,12 @@ def clean_buffer(client:socket.socket):
         try:
             client.recv(1)
         except BlockingIOError as e:
-            if e.errno == 11: break
+            break
 
 def recv_nbytes(client:socket.socket,n:int):
     #global client
     ranIntoInput = False
+    begin_time = time.time()
     result = bytes()
     while True:
         try:
@@ -58,29 +60,32 @@ def recv_nbytes(client:socket.socket,n:int):
             result += now
             ranIntoInput = True
         except BlockingIOError as e:
+            if int(time.time()) - int(begin_time) > 1: break
             if ranIntoInput: break
     if len(result) != n: return None
     return result
 
 def secure_recv(client:socket.socket):
     global server
+    data = bytes()
     md5 = recv_nbytes(client,32)
-    if md5 == None: raise Exception(("FAIL","Invalid data format"))
+    if md5 == None: pass
     try:
         md5 = md5.decode('utf-8')
+        data = recv(client)
     except Exception:
         pass
-    data = recv(client)
+    
     while hashlib.md5(data).hexdigest() != md5:
         clean_buffer(client)
         client.send(make_resend_packet())
-        md5 = recv_nbytes(32)
-        if md5 == None: raise Exception(("FAIL","Invalid data format"))
+        md5 = recv_nbytes(client,32)
+        if md5 == None: pass
         try:
             md5 = md5.decode('utf-8')
+            data = recv(client)
         except Exception:
             pass
-        data = recv()
         
     return data
     
@@ -114,10 +119,10 @@ def processing(clientSocket:socket.socket,clientAddr:tuple,config:dict):
                 else:
                     clientStatus[clientAddr] = 'CHECK'
                     secure_send(clientSocket,pickle.dumps( {'status':'auth','data':config.get('checker')} ) )
-                    print('send message')
+                    print('send check message')
             elif clientStatus.get(clientAddr) == 'CHECK':
                 recv_data = secure_recv(clientSocket)
-                print(recv_data)
+                # print(recv_data)
                 recv_data = pickle.loads(recv_data)
                 print('checking account:', recv_data, database.authlib.checkUserInfomation(recv_data[0],recv_data[1]))
                 result = database.authlib.checkUserInfomation(recv_data[0],recv_data[1])
@@ -128,8 +133,11 @@ def processing(clientSocket:socket.socket,clientAddr:tuple,config:dict):
                 else: secure_send(clientSocket,pickle.dumps( {'status':'accept','data':''} ) )
                 clientStatus[clientAddr] = 'OK'
             elif clientStatus.get(clientAddr) == 'OK':
+                # print('start process query command: ',begin_time)
+                begin_time = int(time.time())
                 recv_data = pickle.loads(secure_recv(clientSocket))
-                print('recv from ' + str(clientAddr) + ': ', recv_data)
+                query_time = int(time.time())
+                # print('recv from ' + str(clientAddr) + ': ', recv_data)
                 if recv_data['action'] == 'disconnect':
                     if database.dbapis.db == None: database.dbapis.openDBFile()
                     database.dbapis.saveDBFile()
@@ -163,13 +171,16 @@ def processing(clientSocket:socket.socket,clientAddr:tuple,config:dict):
                             secure_send(clientSocket,pickle.dumps( {'status':'FAIL','data':'unknown command'} ) )
                 else:
                     secure_send(clientSocket,pickle.dumps( {'status':'FAIL','data':'unknown object'} ) )
+                end_time = int(time.time())
+                print('end query in ', end_time - begin_time, end_time - query_time, query_time - begin_time)
         except Exception as e:
             traceback.print_exc()
-            secure_send(clientSocket,pickle.dumps({'status':'FAIL','data': str(e)}))
+            # secure_send(clientSocket,pickle.dumps({'status':'FAIL','data': str(e)}))
             # clientSocket.close()
             if database.dbapis.db == None: database.dbapis.openDBFile()
             database.dbapis.saveDBFile()
-            break
+            print('exited')
+            return
 
 def run(addr:str,port:str, config:dict):
     server = socket.socket(socket.AF_INET,socket.SOCK_STREAM)

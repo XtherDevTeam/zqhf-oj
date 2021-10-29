@@ -12,7 +12,14 @@ def get_problem(pid:int):
     data = database.client.item_operate('oj_problems',pid,'get')
     if data[0]== 'FAIL': return None
     try:
-        data[1]['description-html'] = markdown.markdown(urllib.parse.unquote(data[1]['description']))
+        data[1]['description-html'] = markdown.markdown(urllib.parse.unquote(data[1]['description']),extensions=[
+            'markdown_katex'
+        ],extension_configs={
+            'markdown_katex': {
+                'no_inline_svg': True,
+                'insert_fonts_css': True,
+            },
+        })
     except Exception:
         data[1]['description-html'] = ''
     return data[1]
@@ -84,7 +91,7 @@ def get_problem_names(from_pid:int,to_pid:int):
 def get_problems_per_page(prefix:int,count:int):
     infomation = database.client.table_operate('oj_problems','info')
     if infomation[0] == 'FAIL':
-        print('why?',infomation)
+        # print('why?',infomation)
         return None
     length = infomation[1]['total_data_cnt']
     result = []

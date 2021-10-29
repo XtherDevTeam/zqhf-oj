@@ -17,7 +17,14 @@ def get_bulletin(index:int):
     query_result = web.users.database.client.item_operate('oj_board',query_result[1]['data'][index],'get')
     if query_result[0] != 'OK': return None
     try:
-        query_result[1]['content-html'] = markdown.markdown(urllib.parse.unquote(query_result['content']))
+        query_result[1]['content-html'] = markdown.markdown(urllib.parse.unquote(query_result['content']),extensions=[
+                'markdown_katex'
+            ],extension_configs={
+                'markdown_katex': {
+                    'no_inline_svg': True,
+                    'insert_fonts_css': True,
+                },
+            })
     except Exception:
         query_result[1]['content-html'] = ''
     return query_result[1]
@@ -61,7 +68,7 @@ def get_bullets(begin:int,end:int):
 
 def get_board(prefix:int):
     total = get_bulletin_count()
-    print('debug',total,prefix)
+    # print('debug',total,prefix)
     result = get_bullets(prefix,prefix + 10)
     return result
 
@@ -360,7 +367,7 @@ def index_of_api():
             return {'status':'success'}
         elif request_item == 'remove_problem':
             if flask.request.args.get('pid') == None or int(flask.request.args.get('pid')) > judge.problems.get_problems_count():
-                print('count: ',judge.problems.get_problems_count())
+                # print('count: ',judge.problems.get_problems_count())
                 return {'status':'error', 'reason':'invalid or empty problem id.'}
             judge.problems.remove_problem(int(flask.request.args.get('pid')))
             return {'status':'success'}
@@ -386,7 +393,7 @@ def index_of_api():
             if flask.session.get('username') == None:
                 return {'status':'error', 'reason':'no matches cookies found.'}
             img = flask.request.files.get('user-img')
-            print(img)
+            # print(img)
             img.save('./tmp/userimg.jpeg')
             with open('./tmp/userimg.jpeg','rb+') as file:
                 f = file.read()
@@ -405,7 +412,7 @@ def index_of_api():
             fill['description'] = flask.request.form.get('description')
             fill['introduction'] = flask.request.form.get('introduction')
             web.users.set_user_descriptions(flask.session.get('username'),fill)
-            print(web.users.get_user_item(flask.session.get('username')))
+            # print(web.users.get_user_item(flask.session.get('username')))
             return {'status':'success'}
         elif(request_item == 'postProblem'):
             problem = flask.request.form.get('problem_json')
@@ -431,7 +438,7 @@ def index_of_api():
             if content == None:
                 return {'status':'error', 'reason': 'invalid json format'}
             content = json.loads(content)
-            print('submit get',content)
+            # print('submit get',content)
             io_file = judge.problems.get_judge_file(int(content['pid'])) # 0-> in, 1-> out
             if io_file == None:
                 return {'status':'error', 'reason': 'problem not exist'}
@@ -468,7 +475,7 @@ def index_of_api():
             if _list == None:
                 return {'status':'error', 'reason': 'invalid post format'}
             _list1 = json.loads(_list)['info']
-            print(_list1)
+            # print(_list1)
             web.problemList.new_problem_list(_list1['name'],flask.session.get('username'),_list1['description'],_list1['content'])
             return {'status':'success'}
 
@@ -531,7 +538,7 @@ def index_of_user_profile(username:str):
                 reason = '用户' + username + '不存在'
             )
         )
-    print(web.users.get_user_item(username))
+    # print(web.users.get_user_item(username))
     return createRootTemplate(
         username + '的个人空间',
         flask.render_template(
@@ -548,7 +555,7 @@ def index_of_problems():
     prefix = 0
     if flask.request.args.get('index') != None:
         prefix = int(flask.request.args.get('index')) * 10
-    print('fuckyou!',judge.problems.get_problems_per_page(prefix,10))
+    # print('fuckyou!',judge.problems.get_problems_per_page(prefix,10))
     return createRootTemplate(
         '题库',
         flask.render_template(

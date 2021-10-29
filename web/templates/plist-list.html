@@ -24,7 +24,7 @@
             {% for i in lists %}
             <tr>
                 <td><a href="/lists/{{i[0]}}" style="overflow: hidden;">{{i[1]['name']}}</a></td>
-                <td class="description-view" id="{{i[1]['name']}}" style="overflow: hidden;">{{i[1]['description']}}</td>
+                <td class="description-view" id="{{i[1]['name']}}" style="overflow: hidden;">{{i[1]['description']|safe}}</td>
                 {% if user['item']['premission'] == 0 %}
                 <td>
                     <div class="btn-group" role="group">

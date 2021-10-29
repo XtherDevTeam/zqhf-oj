@@ -17,7 +17,7 @@
             <tr>
                 <td>{{i[1]}}</td>
                 <td><a href="/user/{{i[name]}}">{{i[0]['name']}}</a></td>
-                <td>{{i[0]['description']}}</td>
+                <td>{{i[0]['description']|safe}}</td>
             </tr>
             {% endfor %}
         </tbody>

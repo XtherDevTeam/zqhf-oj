@@ -15,13 +15,13 @@ def openDBFile():
         db = pickle.loads(file.read())
 
 def createTable(name:str):
-    print('creating table: ' + name)
+    # print('creating table: ' + name)
     global db
     if db == None:
         openDBFile()
     db[name] = {}
     db[name]["data"] = {}
-    print('success')
+    # print('success')
     return {'status':'OK', 'data': None}
 
 def removeTable(name:str):
@@ -35,7 +35,7 @@ def getTableInfo(name:str):
     global db
     if db == None: openDBFile()
     if db.get(name) == None: return {'status':'FAIL','data':'no match table found.'}
-    print('?',db.get(name))
+    # print('?',db.get(name))
     return {'status':'OK','data':{
         'name': name,
         'total_data_cnt': len(db.get(name)['data']),

@@ -62,7 +62,14 @@ def get_articles(prefix:int,count:int):
     for i in range(prefix,prefix + 10):
         this = get_article(i)
         if this == None: continue
-        this['html'] = markdown.markdown(this['content'])
+        this['html'] = markdown.markdown(this['content'],extensions=[
+            'markdown_katex'
+        ],extension_configs={
+            'markdown_katex': {
+                'no_inline_svg': True,
+                'insert_fonts_css': True,
+            },
+        })
         this['id'] = i
         result.append(this)
     return result

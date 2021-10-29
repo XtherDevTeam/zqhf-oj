@@ -21,7 +21,7 @@ def recv():
             result += now
             ranIntoInput = True
         except BlockingIOError as e:
-            if(time.time() - begin_recv > 2):
+            if(time.time() - begin_recv > 1):
                 print('recv timed out.')
                 break
             if ranIntoInput: break
@@ -37,6 +37,7 @@ def clean_buffer(client:socket.socket):
 def recv_nbytes(n:int):
     global client
     ranIntoInput = False
+    begin_recv = time.time()
     result = bytes()
     while True:
         try:
@@ -51,19 +52,23 @@ def recv_nbytes(n:int):
             result += now
             ranIntoInput = True
         except BlockingIOError as e:
+            if(time.time() - begin_recv > 1):
+                print('recv timed out.')
+                break
             if ranIntoInput: break
     if len(result) != n: return None
     return result
 
 def secure_recv(sendMessageWhileMd5Mismatch:bytes):
     global client
+    data = bytes()
     md5 = recv_nbytes(32)
-    if md5 == None: raise Exception(("FAIL","Invalid data format"))
+    if md5 == None: md5 = bytes()
     try:
         md5 = md5.decode('utf-8')
+        data = recv()
     except Exception: pass
-    print('data:',md5)
-    data = recv()
+    # print('data:',md5)
     if(sendMessageWhileMd5Mismatch==bytes()): return data
     while hashlib.md5(data).hexdigest() != md5:
         print("md5 mismatch:",hashlib.md5(data).hexdigest(),md5 )
@@ -72,9 +77,9 @@ def secure_recv(sendMessageWhileMd5Mismatch:bytes):
         md5 = recv_nbytes(32)
         try:
             md5 = md5.decode('utf-8')
+            data = recv()
         except Exception: pass
-        if md5 == None: raise Exception(("FAIL","Invalid data format"))
-        data = recv()
+        if md5 == None: md5 = bytes()
     return data
     
 
@@ -95,11 +100,10 @@ def open_connection(server:str,port:int,username:str,password:str):
         recv_data = pickle.loads(recv_data)
     except Exception as e:
         return str(recv_data)
-    print(recv_data['status'])
+    # print(recv_data['status'])
     if recv_data['status'] == 'accept':
         return True
     elif recv_data['status'] == 'auth':
-        print('need auth')
         secure_send(pickle.dumps([username,password]))
         recv_data = pickle.loads(secure_recv(pickle.dumps([username,password])))
         if recv_data['status'] == 'accept':

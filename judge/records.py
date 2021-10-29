@@ -22,7 +22,7 @@ def get_record(jid:int):
 
 def get_records_per_page(prefix:int):
     query_info = database.client.table_operate('oj_records','info')
-    print(query_info,prefix,10)
+    # print(query_info,prefix,10)
     result = []
     for i in range(query_info[1]['total_data_cnt'] - prefix - 10,query_info[1]['total_data_cnt'] - prefix):
         if i < 0: continue
@@ -37,14 +37,14 @@ def get_records_per_page(prefix:int):
 
 def get_record_count():
     query_info = database.client.table_operate('oj_records','info')
-    print(query_info)
+    # print(query_info)
     return query_info[1]['total_data_cnt']
 
 def push_record(info:list):
     temp = info
     jid = get_record_count()
     database.client.item_operate('oj_records',jid,'new',info)
-    print(info)
+    # print(info)
     if temp[0] == 'Accepted':
         print('AC:' , info[2], info[3])
         description = web.users.get_user_descriptions(info[2])

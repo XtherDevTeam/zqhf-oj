@@ -11,11 +11,11 @@ q = mp.Queue()
 
 def push_task(use_plugin:str,input:str,output:str,source:str,binary:str,author:str,pid:int):
     q.put( [ use_plugin, input, source, binary, output,author,int(pid) ] )
-    print('task pushed->',q)
+    # print('task pushed->',q)
     return judge.records.get_record_count()
 
 def task_processor(queue:mp.Queue):
-    print('start',queue)
+    # print('start',queue)
     judge.plugins.load_plugins_list()
     while True:
         try:
@@ -57,7 +57,7 @@ def task_processor(queue:mp.Queue):
                     while now_item[4][-1] == '\n' or now_item[4][-1] == ' ':
                         now_item[4] = now_item[4][0:-1]
                 if len(execute_result[1]) != len(now_item[4]):
-                    print(execute_result[1],'\n',now_item[4])
+                    # print(execute_result[1],'\n',now_item[4])
                     status[status_queue_prefix] = 'Wrong Answer at character ' + str(len(execute_result[1])) + ' of ' + str(len(now_item[4]))
                 else:
                     for i in range(len(now_item[4])-1):
@@ -67,7 +67,7 @@ def task_processor(queue:mp.Queue):
                 if status[status_queue_prefix] == 'compiling': status[status_queue_prefix] = 'Accepted'
             full_stdout[status_queue_prefix] = 'stdout >\n' + execute_result[1] + '\n\nstderr >\n' + execute_result[2] + '\n\n' + 'returncode >\n' + str(execute_result[3]) + '\n'
             judge.records.push_record( [status[0],full_stdout[0],now_item[5],now_item[6]] )
-            print(execute_result)
+            # print(execute_result)
         except Exception as e:
             traceback.print_exc()
             pass
@@ -78,4 +78,4 @@ def init():
     judge.plugins.load_plugins_list()
     process = mp.Process(target=task_processor,args=(q,))
     process.start()
-    print(process,q)
+    # print(process,q)
