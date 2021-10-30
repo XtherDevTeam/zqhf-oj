@@ -10,6 +10,7 @@ def __del__():
 
 def recv():
     global client
+    client.setblocking(0)
     ranIntoInput = False
     result = bytes()
     begin_recv = time.time()
@@ -25,17 +26,21 @@ def recv():
                 print('recv timed out.')
                 break
             if ranIntoInput: break
+    client.setblocking(1)
     return result
 
 def clean_buffer(client:socket.socket):
+    client.setblocking(0)
     while True:
         try:
             client.recv(1)
         except BlockingIOError as e:
             if e.errno == 11: break
+    client.setblocking(1)
 
 def recv_nbytes(n:int):
     global client
+    client.setblocking(0)
     ranIntoInput = False
     begin_recv = time.time()
     result = bytes()
@@ -57,6 +62,7 @@ def recv_nbytes(n:int):
                 break
             if ranIntoInput: break
     if len(result) != n: return None
+    client.setblocking(1)
     return result
 
 def secure_recv(sendMessageWhileMd5Mismatch:bytes):
@@ -94,7 +100,7 @@ def open_connection(server:str,port:int,username:str,password:str):
     client = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
     client.connect((server,port))
     # recv all blocked
-    client.setblocking(0)
+    # client.setblocking(0)
     recv_data = secure_recv(bytes())
     try:
         recv_data = pickle.loads(recv_data)

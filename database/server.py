@@ -20,6 +20,7 @@ def secure_send(client:socket.socket,data:bytes):
     client.send(data)
 
 def recv(client:socket.socket):
+    client.setblocking(0)
     ranIntoInput = False
     begin_time = time.time()
     result = bytes()
@@ -33,17 +34,21 @@ def recv(client:socket.socket):
         except BlockingIOError as e:
             if int(time.time()) - int(begin_time) > 1: break
             if ranIntoInput: break
+    client.setblocking(1)
     return result
 
 def clean_buffer(client:socket.socket):
+    client.setblocking(0)
     while True:
         try:
             client.recv(1)
         except BlockingIOError as e:
             break
+    client.setblocking(1)
 
 def recv_nbytes(client:socket.socket,n:int):
     #global client
+    client.setblocking(0)
     ranIntoInput = False
     begin_time = time.time()
     result = bytes()
@@ -63,6 +68,7 @@ def recv_nbytes(client:socket.socket,n:int):
             if int(time.time()) - int(begin_time) > 1: break
             if ranIntoInput: break
     if len(result) != n: return None
+    client.setblocking(1)
     return result
 
 def secure_recv(client:socket.socket):
@@ -89,7 +95,7 @@ def secure_recv(client:socket.socket):
         
     return data
     
-
+"""
 def recv_all(clientSocket:socket.socket):
     result = bytes()
     ranIntoInput = False
@@ -105,7 +111,7 @@ def recv_all(clientSocket:socket.socket):
         except BlockingIOError as e:
             if ranIntoInput: break
     return result
-
+"""
 
 
 def processing(clientSocket:socket.socket,clientAddr:tuple,config:dict):
@@ -186,11 +192,10 @@ def run(addr:str,port:str, config:dict):
     server = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
     server.bind((addr,port))
     server.listen(128)
-    server.setblocking(0)
+    # server.setblocking(0)
     while True:
         try:
             clientSocket, clientAddr = server.accept()
-            clientSocket.setblocking(0)
             print('get connection:' + str(clientAddr))
             # processing(clientSocket,clientAddr,config)
             threadpool[clientAddr] = threading.Thread(target=processing,args=(clientSocket,clientAddr,config))
