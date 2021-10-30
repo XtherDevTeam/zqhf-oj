@@ -1,4 +1,6 @@
-import database.client,config.global_config,web.users
+import database.client,config.global_config,web.users,database.dbapis
+
+database.dbapis.saveDBFile()
 
 database.client.open_connection(
     config.global_config.global_config['database-server-host'],

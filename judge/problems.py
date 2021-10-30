@@ -56,8 +56,6 @@ def remove_problem(pid:int):
         if i == cnt - 1: 
             database.client.item_operate('oj_problems',i,'delete')
             break
-        data = get_problem(i)
-        edit_problem(i-1,data)
         os.rename('judge/judge_files/' + str(i) + '.in','judge/judge_files/' + str(i-1) + '.in')
         os.rename('judge/judge_files/' + str(i) + '.out','judge/judge_files/' + str(i-1) + '.out')
 

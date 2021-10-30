@@ -156,7 +156,7 @@ def processing(clientSocket:socket.socket,clientAddr:tuple,config:dict):
                         secure_send(clientSocket,pickle.dumps( {'status':'FAIL','data':'unknown command'} ) )
                 elif recv_data['object'] == 'table':
                         if recv_data['action'] == 'new':
-                            secure_send(clientSocket, pickle.dumps( database.dbapis.createTable(recv_data['table']) ) )
+                            secure_send(clientSocket, pickle.dumps( database.dbapis.createTable(recv_data['table'],recv_data['data']) ) )
                         elif recv_data['action'] == 'delete':
                             secure_send(clientSocket,pickle.dumps( database.dbapis.removeTable(recv_data['table']) ) )
                         elif recv_data['action'] == 'info':
