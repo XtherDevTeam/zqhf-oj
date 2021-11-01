@@ -9,11 +9,11 @@ database.client.open_connection(
     config.global_config.global_config['database-server-password']
 )
 
-database.client.table_operate('oj_records','new')
-database.client.table_operate('oj_problems','new')
-database.client.table_operate('oj_board','new')
-database.client.table_operate('oj_ranking','new')
-database.client.table_operate('oj_users','new')
-database.client.table_operate('oj_problem_lists','new')
-database.client.table_operate('oj_article','new')
+database.client.table_operate('oj_records','new','list')
+database.client.table_operate('oj_problems','new','list')
+database.client.table_operate('oj_board','new','dict')
+database.client.table_operate('oj_ranking','new','list')
+database.client.table_operate('oj_users','new','dict')
+database.client.table_operate('oj_problem_lists','new','dict')
+database.client.table_operate('oj_article','new','list')
 web.users.new_user('admin',0,'admin')
