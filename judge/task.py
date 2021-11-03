@@ -1,5 +1,5 @@
 import multiprocessing as mp
-import os
+import os,time
 from sys import stdout
 import judge.plugins,judge.records,traceback,judge.problems
 
@@ -21,6 +21,7 @@ def task_processor(queue:mp.Queue):
         try:
             global status_queue_prefix
             while queue.empty():
+                time.sleep(0.1)
                 continue
             now_item = queue.get()
             status[status_queue_prefix] = 'compiling'
