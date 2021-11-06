@@ -10,7 +10,7 @@ def init():
     ))
 
 def new_article(title:str,author:str,content:str):
-    return database.client.item_operate('oj_article',title,'new',{
+    return database.client.item_operate('oj_article',id,'new',{
         'title': title,
         'author': author,
         'time': time.strftime('%Y-%m-%d %H:%M:%S Localtime',time.localtime(time.time())),
@@ -27,10 +27,10 @@ def new_comment(id:int,author:str,content:str):
     })
 
 def remove_article(id:int):
-    return database.client.item_operate('oj_article',id_to_name(id),'delete')
+    return database.client.item_operate('oj_article',id,'delete')
 
 def get_article(id:int):
-    result = database.client.item_operate('article',id_to_name(id),'get')
+    result = database.client.item_operate('article',id,'get')
     if result[0] == 'FAIL': return None
     return result[1]['data']
 
@@ -38,24 +38,6 @@ def get_articles_count():
     query = database.client.table_operate('oj_article','info')
     if query[0] == 'FAIL': return 0
     return query[1]['total_data_cnt']
-
-def get_article_names():
-    query = database.client.table_operate('oj_article','all')
-    if query[0] == 'FAIL': return []
-    return query[1]['data']
-
-def id_to_name(id:int):
-    if type(id).__name__ == 'str': id = int(id)
-    result = get_article_names()
-    if id >= len(result): return None
-    return result[id]
-
-def name_to_id(name:str):
-    result = get_article_names()
-    try:
-        return result.index(name)
-    except Exception:
-        return None
 
 def get_articles(prefix:int,count:int):
     result = []
@@ -66,7 +48,7 @@ def get_articles(prefix:int,count:int):
             'markdown_katex'
         ],extension_configs={
             'markdown_katex': {
-                'no_inline_svg': True,
+                'no_inline_svg': False,
                 'insert_fonts_css': True,
             },
         })

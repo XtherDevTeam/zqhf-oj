@@ -4,6 +4,10 @@ server = socket.socket
 clientStatus = {}
 threadpool = {}
 
+class DataRecvError(Exception):
+    def __init__(self,str):
+        super().__init__(self,str)
+
 def make_repeat(_str:str,c:int = 32):
     s = ''
     for i in range(0,c):
@@ -14,12 +18,11 @@ def make_resend_packet():
     hash = make_repeat('f',32) + '1145141919810'
     return hash.encode('utf-8')
     
-
 def secure_send(client:socket.socket,data:bytes):
     client.send(hashlib.md5(data).hexdigest().encode('utf-8'))
     client.send(data)
 
-def recv(client:socket.socket):
+def recv_all(client:socket.socket):
     client.setblocking(0)
     ranIntoInput = False
     begin_time = time.time()
@@ -34,17 +37,16 @@ def recv(client:socket.socket):
         except BlockingIOError as e:
             if int(time.time()) - int(begin_time) > 1: break
             if ranIntoInput: break
-    client.setblocking(1)
+            time.sleep(0.01)
     return result
 
 def clean_buffer(client:socket.socket):
     client.setblocking(0)
     while True:
         try:
-            client.recv(1)
-        except BlockingIOError as e:
-            break
-    client.setblocking(1)
+            if client.recv(1) == b'': return
+        except Exception:
+            return
 
 def recv_nbytes(client:socket.socket,n:int):
     #global client
@@ -67,6 +69,7 @@ def recv_nbytes(client:socket.socket,n:int):
         except BlockingIOError as e:
             if int(time.time()) - int(begin_time) > 1: break
             if ranIntoInput: break
+            time.sleep(0.01)
     if len(result) != n: return None
     client.setblocking(1)
     return result
@@ -75,10 +78,11 @@ def secure_recv(client:socket.socket):
     global server
     data = bytes()
     md5 = recv_nbytes(client,32)
-    if md5 == None: pass
+    if md5 == None: 
+        raise DataRecvError("no data fetched")
     try:
         md5 = md5.decode('utf-8')
-        data = recv(client)
+        data = recv_all(client)
     except Exception:
         pass
     
@@ -86,35 +90,19 @@ def secure_recv(client:socket.socket):
         clean_buffer(client)
         client.send(make_resend_packet())
         md5 = recv_nbytes(client,32)
-        if md5 == None: pass
+        if md5 == None: continue
         try:
             md5 = md5.decode('utf-8')
-            data = recv(client)
+            data = recv_all(client)
         except Exception:
+            # time.sleep(0.1)
             pass
-        
+
     return data
-    
-"""
-def recv_all(clientSocket:socket.socket):
-    result = bytes()
-    ranIntoInput = False
-    while True:
-        try:
-            clientSocket.setblocking(0)
-            current = clientSocket.recv(1024)
-            clientSocket.setblocking(1)
-            if len(current) == 0:
-                break
-            else: result += current
-            ranIntoInput = True
-        except BlockingIOError as e:
-            if ranIntoInput: break
-    return result
-"""
 
 
 def processing(clientSocket:socket.socket,clientAddr:tuple,config:dict):
+    # clientSocket.setblocking(0)
     while True:
         try:
             if clientStatus.get(clientAddr) == None:
@@ -179,6 +167,9 @@ def processing(clientSocket:socket.socket,clientAddr:tuple,config:dict):
                     secure_send(clientSocket,pickle.dumps( {'status':'FAIL','data':'unknown object'} ) )
                 end_time = int(time.time())
                 print('end query in ', end_time - begin_time, end_time - query_time, query_time - begin_time)
+        except DataRecvError as e:
+            # print(threading.currentThread().name, ' sleep\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b',end='')
+            time.sleep(0.1)
         except Exception as e:
             traceback.print_exc()
             # secure_send(clientSocket,pickle.dumps({'status':'FAIL','data': str(e)}))
@@ -202,6 +193,7 @@ def run(addr:str,port:str, config:dict):
             threadpool[clientAddr].start()
             #threadpool[clientAddr].join()
         except BlockingIOError as e:
-            print('I\'m free!','\b\b\b\b\b\b\b\b\b\b\b',end='\b')
+            time.sleep(0.1)
+            # print("I'm free\r\r\r\r\r\r\r\r",end='')
             pass
     server.close()

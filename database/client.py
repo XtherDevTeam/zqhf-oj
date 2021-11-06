@@ -34,8 +34,8 @@ def clean_buffer(client:socket.socket):
     while True:
         try:
             client.recv(1)
-        except BlockingIOError as e:
-            if e.errno == 11: break
+        except Exception as e:
+            return
     client.setblocking(1)
 
 def recv_nbytes(n:int):
@@ -99,8 +99,8 @@ def open_connection(server:str,port:int,username:str,password:str):
     global client
     client = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
     client.connect((server,port))
-    # recv all blocked
     # client.setblocking(0)
+    # recv all blocked
     recv_data = secure_recv(bytes())
     try:
         recv_data = pickle.loads(recv_data)

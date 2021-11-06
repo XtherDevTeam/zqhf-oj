@@ -45,7 +45,7 @@ def execute_plugin( use_plugin:str, input:str, env:dict, time_out:int = 1000, me
     pipe_stdout = open('./tmp/stdout.log','w+')
     pipe_stderr = open('./tmp/stderr.log','w+')
     print('executing: ',fork['compile_command'],fork['exec_command'], 'memlimit', memlimit)
-    fp = Popen('ulimit -m ' + str(memlimit) + ';' + fork['exec_command'],shell=True,cwd=os.getcwd() + '/tmp',stdin=pipe_stdin.fileno(),stdout=pipe_stdout.fileno(),stderr=pipe_stderr.fileno())
+    fp = Popen('ulimit -m ' + str(memlimit) + ';ulimit -v ' + str(memlimit) + ';' + fork['exec_command'],shell=True,cwd=os.getcwd() + '/tmp',stdin=pipe_stdin.fileno(),stdout=pipe_stdout.fileno(),stderr=pipe_stderr.fileno())
     time.sleep(time_out / 1000)
     fp.poll()
     fp.kill()

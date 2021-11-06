@@ -1,4 +1,4 @@
-import os,sys,json,hashlib,time,demjson,database.client,config.global_config,web.ranking
+import os,sys,json,hashlib,time,demjson,database.client,config.global_config,web.ranking,markdown,urllib.parse
 
 
 def init():
@@ -41,7 +41,16 @@ def set_user_descriptions(username:str, desciptions:dict):
     database.client.item_operate('oj_users',username,'change',result)
 
 def get_user_descriptions(username:str):
-    return get_user_item(username)["descriptions"]
+    d = get_user_item(username)["descriptions"]
+    d['introduction-html'] = markdown.markdown(urllib.parse.unquote(d['introduction']),extensions=[
+                'markdown_katex'
+            ],extension_configs={
+                'markdown_katex': {
+                    'no_inline_svg': False,
+                    'insert_fonts_css': True,
+                },
+            })
+    return d
 
 def new_user(username:str,level:int,pwd:str):
     info = {}

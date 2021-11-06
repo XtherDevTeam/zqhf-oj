@@ -16,7 +16,7 @@ def get_problem(pid:int):
             'markdown_katex'
         ],extension_configs={
             'markdown_katex': {
-                'no_inline_svg': True,
+                'no_inline_svg': False,
                 'insert_fonts_css': True,
             },
         })

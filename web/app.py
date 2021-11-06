@@ -17,15 +17,18 @@ def get_bulletin(index:int):
     query_result = web.users.database.client.item_operate('oj_board',query_result[1]['data'][index],'get')
     if query_result[0] != 'OK': return None
     try:
-        query_result[1]['content-html'] = markdown.markdown(urllib.parse.unquote(query_result['content']),extensions=[
+        # print(query_result)
+        query_result[1]['content-html'] = markdown.markdown(urllib.parse.unquote(query_result[1]['content']),extensions=[
                 'markdown_katex'
             ],extension_configs={
                 'markdown_katex': {
-                    'no_inline_svg': True,
+                    'no_inline_svg': False,
                     'insert_fonts_css': True,
                 },
             })
-    except Exception:
+        query_result[1]['content-html'] = urllib.parse.quote(query_result[1]['content-html'])
+    except Exception as e:
+        # print(e)
         query_result[1]['content-html'] = ''
     return query_result[1]
 
@@ -467,8 +470,8 @@ def index_of_api():
             bulletin = json.loads(bulletin)
             id = int(flask.request.form.get('action'))
             new_bulletin(bulletin['title'],bulletin['content'],time.strftime('%Y-%m-%d %H:%M:%S Localtime',time.localtime(time.time())))
-            if bulletin['oldtitle'] != bulletin['newtitle']:
-                remove_bulletin(get_bulletin_fakeid(bulletin['oldtitle']))
+            if get_bulletin_realid(id) != bulletin['title']:
+                remove_bulletin(id)
             return {'status':'success'}
         elif(request_item == 'postList'):
             _list = flask.request.form.get('json')
@@ -546,7 +549,7 @@ def index_of_user_profile(username:str):
             config_file = web.config.configf,
             user = { 'name':username, 'item':web.users.get_user_item(username)  },
             ACedCount = len(web.users.get_user_item(username)['descriptions']['solved-problems']),
-            introduction = urllib.parse.unquote(web.users.get_user_item(username)['descriptions']['introduction'])
+            introduction = web.users.get_user_descriptions(username)['introduction-html'],
         )
     )
 
