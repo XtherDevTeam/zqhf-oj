@@ -1,0 +1,91 @@
+<style>
+.note-selector{
+    background-color: white;
+    transition: all 0.5s; 
+}
+.note-selector:hover{
+    background-color: rgba(0,0,0,.02);
+}
+.note-selector-active{
+    background: rgba(0,0,0,.05);
+}
+</style>
+
+<div class="container" style="margin: 0 auto;">
+    <br>
+    <h4>笔记</h4>
+    <br>
+    <div style="display: flex;">
+    <ol class="list-group" style="
+        width: 20%;
+        height: 500px;
+        float: left;
+        border: 1px solid rgba(0, 0, 0, 0.25);
+        border-radius: unset;
+        overflow-y: scroll;
+        display: block;
+    ">
+        {% for i in notebook %}
+            <a id="selector-{{i['title']}}" class="note-selector list-group-item d-flex justify-content-between align-items-start"
+            style="
+                border: none;overflow: hidden;
+                border-top-left-radius: unset;
+                border-top-right-radius: unset;
+                border-bottom-left-radius: unset;
+                border-bottom-right-radius: unset;
+                height: 60px;
+            " onclick="preview({{notebook.index(i)}});" href="javascript:void(0);">
+                <div class="ms-2 me-auto">
+                    <div class="fw-normal">{{i['title']}}<br></div>
+                    <span style="color: gray;font-size: 0.7rem;height: 1rem;display: block;overflow: hidden;width: 100%;">{{i['content']}}</span>
+                </div>
+            </a>
+        {% endfor %}
+    </ol>
+    <br>
+    <div id="main_frame" style="margin: 0 auto;width: 75%;height: 500px;overflow: hidden;border: 1px solid rgba(0, 0, 0, 0.25);margin-left: -1px;">
+    <iframe src="" id="preview" style="margin: 10px 10px;width: calc(100% - 11px);height: calc(500px - 11px);" onLoad="url_checker(this.contentWindow.location.href);"></iframe>
+    </div>
+    </div>
+    <br>
+    <a class="btn btn-primary" style="clear: both;" href="javascript:void(0);" onclick="edit();">编辑</a>
+    <a class="btn btn-primary" style="clear: both;" href="javascript:void(0);" onclick="remove();">删除</a>
+    <a class="btn btn-primary" style="clear: both;" href="javascript:void(0);" onclick="new_note()">新笔记</a>
+    <br>
+    <br>
+</div>
+<br>
+
+<script>
+var notebook = {{notebook_json|safe}};
+var cur_note = 0;
+function url_checker(url){
+    console.log(url)
+    if(url == "http://xiaokang00010.top:5914/nbapi?windowRefresh"){
+        window.location = window.location;
+    }
+}
+function preview(id){
+    document.getElementById('selector-'+notebook[cur_note]['title']).classList.remove('note-selector-active')
+    cur_note = id;
+    document.getElementById('preview').src = '/notebook/preview/' + cur_note;
+    document.getElementById('selector-'+notebook[cur_note]['title']).classList.add('note-selector-active');
+}
+function edit(){
+    document.getElementById('preview').src = '/notebook/edit/' + cur_note;
+}
+function new_note(){
+    document.getElementById('preview').src = '/notebook/new';
+}
+function remove(){
+    var xmlhttp = new XMLHttpRequest();
+    xmlhttp.open('GET','/api?request=removeNote&action=' + cur_note,0);
+    xmlhttp.send();
+    result = JSON.parse(xmlhttp.responseText);
+    if(result['status'] == 'error'){
+        alert(result['reason']);
+    }
+    window.location = window.location;
+}
+
+</script>

@@ -1,0 +1,59 @@
+    <link href="/src/codemirror-5.63.1/lib/codemirror.css" rel="stylesheet">
+    <script src="/src/codemirror-5.63.1/lib/codemirror.js"></script>
+    <script src="/src/codemirror-5.63.1/mode/xml/xml.js"></script>
+    <script src="/src/codemirror-5.63.1/mode/python/python.js"></script>
+    <script src="/src/codemirror-5.63.1/mode/javascript/javascript.js"></script>
+    <script src="/src/codemirror-5.63.1/mode/clike/clike.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+    <link href="/src/main_sheet.css" rel="stylesheet" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.2/css/all.css" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap"
+    />
+    <link rel="stylesheet" href="/src/mdb5/css/mdb.min.css" />
+
+<h4>笔记标题</h4>
+<input style="width: 90%;" id="title" name="title" type="text" class="form-control" value="" aria-describedby="basic-addon1"><br><br>
+<h4>内容</h4>
+<textarea id="content" name="content"></textarea><br>
+{% if noteid == 'new' %}
+<a class="btn btn-primary" style="clear: both;" href="javascript:void(0);" onclick="submit()">新建</a>
+{% else %}
+<a class="btn btn-primary" style="clear: both;" href="javascript:void(0);" onclick="submit()">修改</a>
+{% endif %}
+<br>
+<br>
+<script>
+var content_edit = CodeMirror.fromTextArea(document.getElementById("content"), {
+    mode: 'text/x-markdown',
+    lineNumbers: true,
+    highlightFormatting: true
+});
+{% if noteid != 'new' %}
+content_edit.setValue(decodeURIComponent('{{note["content"]}}'));
+document.getElementById('title').value = '{{note["title"]}}';
+{% endif %}
+function submit() {
+    //$http.post('/api?request=updateUserSpace', { 'description':description,'introduction':introduction });
+    $.post('/api?request=editNote',
+        {
+            "action":"{{noteid}}", // 新建时noteid为new
+            "json": JSON.stringify({
+            "info": {
+                'title': document.getElementById('title').value,
+                'content': encodeURIComponent(content_edit.getValue()),
+            }
+        })
+        },function (){
+        if( '{{noteid}}' == 'new' ){
+            window.location = '/nbapi?windowRefresh';
+        }else{
+            window.location = '/notebook/preview/' + '{{noteid}}';
+        }
+    },'json')
+}
+
+</script>

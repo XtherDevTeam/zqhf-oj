@@ -1,5 +1,5 @@
 import json
-import os,sys,flask,web.config,web.users,demjson,urllib.parse,judge.problems,judge.task,judge.records,judge.plugins,atexit,base64,time,web.ranking,web.problemList,markdown
+import os,sys,flask,web.config,web.users,demjson,urllib.parse,judge.problems,judge.task,judge.records,judge.plugins,atexit,base64,time,web.ranking,web.problemList,markdown,web.notebook
 from flask.templating import render_template
 
 app = flask.Flask(__name__,static_url_path='/src')
@@ -90,7 +90,7 @@ def createRootTemplate( _action:str,renderText ):
 def index():
     logined = (flask.session.get('username') != None)
     if not logined:
-        return flask.redirect('/login?reason=You are not signed in!')
+        return flask.redirect('/login?reason=请先登录!')
 
     board = get_board(get_bulletin_count() - 10)
     board.reverse()
@@ -127,7 +127,7 @@ def index_of_problem_lists():
 def index_of_problem_list_post():
     logined = (flask.session.get('username') != None)
     if not logined:
-        return flask.redirect('/login?reason=You are not signed in!')
+        return flask.redirect('/login?reason=请先登录!')
     
     return createRootTemplate(
         '创建题单',
@@ -166,7 +166,7 @@ def index_of_problem_list(name):
 def index_of_problem_list_edit(name):
     logined = (flask.session.get('username') != None)
     if not logined:
-        return flask.redirect('/login?reason=You are not signed in!')
+        return flask.redirect('/login?reason=请先登录!')
     
     _list = web.problemList.get_problem_list(web.problemList.id_to_name(int(name)))
     if _list == None:
@@ -192,7 +192,7 @@ def index_of_problem_list_edit(name):
 def index_of_bulletin_list():
     logined = (flask.session.get('username') != None)
     if not logined:
-        return flask.redirect('/login?reason=You are not signed in!')
+        return flask.redirect('/login?reason=请先登录!')
     now_index = 0
     if flask.request.args.get('index') != None: now_index = int(flask.request.args.get('index'))
     prefix = now_index * 10
@@ -214,7 +214,7 @@ def index_of_bulletin_list():
 def index_of_edit_bulletin(id):
     logined = (flask.session.get('username') != None)
     if not logined:
-        return flask.redirect('/login?reason=You are not signed in!')
+        return flask.redirect('/login?reason=请先登录!')
     if web.users.get_user_item(flask.session.get('username')) == None or web.users.get_user_item(flask.session.get('username'))['premission'] != 0:
         return createRootTemplate(
             '错误',
@@ -309,7 +309,7 @@ def index_of_ranking():
 def index_of_post_bulletin():
     logined = (flask.session.get('username') != None)
     if not logined:
-        return flask.redirect('/login?reason=You are not signed in!')
+        return flask.redirect('/login?reason=请先登录!')
     if web.users.get_user_item(flask.session.get('username')) == None or web.users.get_user_item(flask.session.get('username'))['premission'] != 0:
         return createRootTemplate(
             '错误',
@@ -380,6 +380,14 @@ def index_of_api():
             remove_bulletin(int(flask.request.args.get('id')))
             
             return {'status':'success'}
+        elif(request_item == 'removeNote'):
+            id = flask.request.args.get('action')
+            try:
+                id = int(id)
+            except Exception:
+                return {'status':'error','reason':'invalid note number'}
+            web.notebook.remove_note(flask.session['username'],id)
+            return {'status':'success'}
         elif request_item == 'remove_plist':
             if flask.request.args.get('id') == None or int(flask.request.args.get('id')) > get_bulletin_count():
                 return {'status':'error', 'reason':'invalid or empty bulletin id.'}
@@ -435,6 +443,14 @@ def index_of_api():
             pid = int(flask.request.form.get('action'))
             judge.problems.edit_problem(pid,problem['info'])
             judge.problems.createJudgeFile(pid,problem["input"],problem["output"])
+            return {'status':'success'}
+        elif(request_item == 'editNote'):
+            note_content = json.loads(flask.request.form.get('json'))['info']
+            id = flask.request.form.get('action')
+            if id == 'new':
+                web.notebook.new_note(flask.session['username'],note_content['title'],note_content['content'])
+            else:
+                web.notebook.edit_user_note(flask.session['username'],int(id),note_content)
             return {'status':'success'}
         elif(request_item == 'submitAnswer'):
             content = flask.request.form.get('json')
@@ -519,7 +535,7 @@ def index_of_signup():
 def index_of_user_self():
     logined = (flask.session.get('username') != None)
     if not logined:
-        return flask.redirect('/login?reason=You are not signed in!')
+        return flask.redirect('/login?reason=请先登录!')
     finalUser = { 'name':flask.session.get('username'), 'item':web.users.get_user_item(flask.session.get('username'))  }
     return createRootTemplate(
         flask.session.get('username') + '的账户管理',
@@ -529,6 +545,87 @@ def index_of_user_self():
             user = finalUser
         )
     )
+
+@app.route('/notebook', methods = ['GET'])
+def index_of_notebook():
+    logined = (flask.session.get('username') != None)
+    if not logined:
+        return flask.redirect('/login?reason=请先登录!')
+    
+    notebook = web.notebook.get_user_notes(flask.session['username'])
+    return createRootTemplate(
+        '我的笔记',
+        flask.render_template(
+            'notebook.html',
+            notebook = notebook,
+            notebook_json = json.dumps(notebook)
+        )
+    )
+
+@app.route('/notebook/new', methods = ['GET'])
+def index_of_new_note():
+    logined = (flask.session.get('username') != None)
+    if not logined:
+        return flask.redirect('/login?reason=请先登录!')
+    return flask.render_template(
+        'note-edit.html',
+        noteid = 'new'
+    )
+
+@app.route('/notebook/edit/<id>', methods = ['GET'])
+def indxe_of_edit_note(id):
+    logined = (flask.session.get('username') != None)
+    if not logined:
+        return flask.redirect('/login?reason=请先登录!')
+    content = web.notebook.get_user_notes(flask.session['username'])
+    if int(id) >= len(content):
+        return createRootTemplate(
+            '错误',
+            flask.render_template(
+                'error.html',
+                config_file = web.config.configf,
+                reason = '笔记' + id + '不存在'
+            )
+        )
+
+    return flask.render_template(
+        'note-edit.html',
+        noteid = id,
+        note = content[int(id)]
+    )
+
+@app.route('/notebook/preview/<id>', methods = ['GET'])
+def index_of_preview_note(id):
+    logined = (flask.session.get('username') != None)
+    if not logined:
+        return flask.redirect('/login?reason=请先登录!')
+    content = web.notebook.get_user_notes(flask.session['username'])
+    try:
+        id = int(id)
+    except Exception:
+        return createRootTemplate(
+            '错误',
+            flask.render_template(
+                'error.html',
+                config_file = web.config.configf,
+                reason = '不合法的笔记编号:' + id
+            )
+        )
+    if id >= len(content):
+        return createRootTemplate(
+            '错误',
+            flask.render_template(
+                'error.html',
+                config_file = web.config.configf,
+                reason = '笔记' + str(id) + '不存在'
+            )
+        )
+    
+    return flask.render_template(
+        'note-preview.html',
+        note = web.notebook.get_note_html(content[id])
+    )
+
 
 @app.route('/user/<username>',methods = ["GET"])
 def index_of_user_profile(username:str):
@@ -577,7 +674,7 @@ def index_of_problems():
 def index_of_post_problem():
     logined = (flask.session.get('username') != None)
     if not logined:
-        return flask.redirect('/login?reason=You are not signed in!')
+        return flask.redirect('/login?reason=请先登录!')
     return createRootTemplate(
         '创建题目',
         flask.render_template(
@@ -591,7 +688,7 @@ def index_of_post_problem():
 def index_of_edit_problem():
     logined = (flask.session.get('username') != None)
     if not logined:
-        return flask.redirect('/login?reason=You are not signed in!')
+        return flask.redirect('/login?reason=请先登录!')
     pid = flask.request.args.get('pid')
     if pid == None or int(pid) > judge.problems.get_problems_count():
         return createRootTemplate(
@@ -644,7 +741,7 @@ def index_of_problem(pid:str):
 def index_of_post_answer(pid):
     logined = (flask.session.get('username') != None)
     if not logined:
-        return flask.redirect('/login?reason=You are not signed in!')
+        return flask.redirect('/login?reason=请先登录!')
     pid = int(pid)
     if pid > judge.problems.get_problems_count():
         return createRootTemplate(

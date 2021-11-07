@@ -87,10 +87,8 @@ function logout() {
                   &nbsp;{{ user['name'] }}
                 </a>
                 <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-                  {% if user['item']['premission'] == 0 %}
-                  <li><a class="dropdown-item" href="/manage">服务器管理</a></li>
-                  {% endif %}
                   <li><a class="dropdown-item" href="/user/self">用户设置</a></li>
+                  <li><a class="dropdown-item" href="/notebook">我的笔记</a></li>
                   <li><a class="dropdown-item" href="javascript:void(0);" onclick="logout()">登出</a></li>
                 </ul>
               </li>

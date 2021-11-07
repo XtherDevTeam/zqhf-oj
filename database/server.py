@@ -37,7 +37,7 @@ def recv_all(client:socket.socket):
         except BlockingIOError as e:
             if int(time.time()) - int(begin_time) > 1: break
             if ranIntoInput: break
-            time.sleep(0.01)
+            # time.sleep(0.01)
     return result
 
 def clean_buffer(client:socket.socket):
@@ -69,7 +69,7 @@ def recv_nbytes(client:socket.socket,n:int):
         except BlockingIOError as e:
             if int(time.time()) - int(begin_time) > 1: break
             if ranIntoInput: break
-            time.sleep(0.01)
+            # time.sleep(0.01)
     if len(result) != n: return None
     client.setblocking(1)
     return result
