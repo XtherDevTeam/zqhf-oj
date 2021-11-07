@@ -33,10 +33,9 @@ def clean_buffer(client:socket.socket):
     client.setblocking(0)
     while True:
         try:
-            client.recv(1)
-        except Exception as e:
+            if client.recv(1) == b'': return
+        except Exception:
             return
-    client.setblocking(1)
 
 def recv_nbytes(n:int):
     global client

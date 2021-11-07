@@ -1,5 +1,5 @@
 import json
-import os,sys,flask,web.config,web.users,demjson,urllib.parse,judge.problems,judge.task,judge.records,judge.plugins,atexit,base64,time,web.ranking,web.problemList,markdown,web.notebook
+import os,sys,flask,web.config,web.users,demjson,urllib.parse,judge.problems,judge.task,judge.records,judge.plugins,atexit,base64,time,web.ranking,web.problemList,markdown,web.notebook,time
 from flask.templating import render_template
 
 app = flask.Flask(__name__,static_url_path='/src')
@@ -125,6 +125,15 @@ def index_of_problem_lists():
 
 @app.route('/lists/post',methods = ["GET"])
 def index_of_problem_list_post():
+    if flask.session.get('username') != None and web.users.get_user_item(flask.session.get('username'))['premission'] == 2:
+        return createRootTemplate(
+            '错误',
+            flask.render_template(
+                'error.html',
+                config_file = web.config.configf,
+                reason = flask.session.get('username') + '已被封禁!请询问服务器管理员以了解原因.'
+            )
+        )
     logined = (flask.session.get('username') != None)
     if not logined:
         return flask.redirect('/login?reason=请先登录!')
@@ -164,6 +173,15 @@ def index_of_problem_list(name):
 
 @app.route('/lists/<name>/edit',methods = ["GET"])
 def index_of_problem_list_edit(name):
+    if flask.session.get('username') != None and web.users.get_user_item(flask.session.get('username'))['premission'] == 2:
+        return createRootTemplate(
+            '错误',
+            flask.render_template(
+                'error.html',
+                config_file = web.config.configf,
+                reason = flask.session.get('username') + '已被封禁!请询问服务器管理员以了解原因.'
+            )
+        )
     logined = (flask.session.get('username') != None)
     if not logined:
         return flask.redirect('/login?reason=请先登录!')
@@ -212,6 +230,15 @@ def index_of_bulletin_list():
 
 @app.route('/bulletins/<id>/edit',methods = ["GET"])
 def index_of_edit_bulletin(id):
+    if flask.session.get('username') != None and web.users.get_user_item(flask.session.get('username'))['premission'] == 2:
+        return createRootTemplate(
+            '错误',
+            flask.render_template(
+                'error.html',
+                config_file = web.config.configf,
+                reason = flask.session.get('username') + '已被封禁!请询问服务器管理员以了解原因.'
+            )
+        )
     logined = (flask.session.get('username') != None)
     if not logined:
         return flask.redirect('/login?reason=请先登录!')
@@ -249,6 +276,15 @@ def index_of_edit_bulletin(id):
 
 @app.route('/tags/<tag>')
 def index_of_tags_matcher(tag):
+    if flask.session.get('username') != None and web.users.get_user_item(flask.session.get('username'))['premission'] == 2:
+        return createRootTemplate(
+            '错误',
+            flask.render_template(
+                'error.html',
+                config_file = web.config.configf,
+                reason = flask.session.get('username') + '已被封禁!请询问服务器管理员以了解原因.'
+            )
+        )
     problems = judge.problems.get_match_tags_problems(tag)
     return createRootTemplate(
         '查询标签:' + tag,
@@ -307,6 +343,15 @@ def index_of_ranking():
 
 @app.route('/bulletins/post',methods = ["GET"])
 def index_of_post_bulletin():
+    if flask.session.get('username') != None and web.users.get_user_item(flask.session.get('username'))['premission'] == 2:
+        return createRootTemplate(
+            '错误',
+            flask.render_template(
+                'error.html',
+                config_file = web.config.configf,
+                reason = flask.session.get('username') + '已被封禁!请询问服务器管理员以了解原因.'
+            )
+        )
     logined = (flask.session.get('username') != None)
     if not logined:
         return flask.redirect('/login?reason=请先登录!')
@@ -369,18 +414,24 @@ def index_of_api():
                 del flask.session['username']
             return {'status':'success'}
         elif request_item == 'remove_problem':
+            if flask.session.get('username') != None and web.users.get_user_item(flask.session.get('username'))['premission'] == 2:
+                return {'status':'error', 'reason': 'premission denied'}
             if flask.request.args.get('pid') == None or int(flask.request.args.get('pid')) > judge.problems.get_problems_count():
                 # print('count: ',judge.problems.get_problems_count())
                 return {'status':'error', 'reason':'invalid or empty problem id.'}
             judge.problems.remove_problem(int(flask.request.args.get('pid')))
             return {'status':'success'}
         elif request_item == 'remove_bulletin':
+            if flask.session.get('username') != None and web.users.get_user_item(flask.session.get('username'))['premission'] == 2:
+                return {'status':'error', 'reason': 'premission denied'}
             if flask.request.args.get('id') == None or int(flask.request.args.get('id')) > get_bulletin_count():
                 return {'status':'error', 'reason':'invalid or empty bulletin id.'}
             remove_bulletin(int(flask.request.args.get('id')))
             
             return {'status':'success'}
         elif(request_item == 'removeNote'):
+            if flask.session.get('username') != None and web.users.get_user_item(flask.session.get('username'))['premission'] == 2:
+                return {'status':'error', 'reason': 'premission denied'}
             id = flask.request.args.get('action')
             try:
                 id = int(id)
@@ -389,12 +440,16 @@ def index_of_api():
             web.notebook.remove_note(flask.session['username'],id)
             return {'status':'success'}
         elif request_item == 'remove_plist':
+            if flask.session.get('username') != None and web.users.get_user_item(flask.session.get('username'))['premission'] == 2:
+                return {'status':'error', 'reason': 'premission denied'}
             if flask.request.args.get('id') == None or int(flask.request.args.get('id')) > get_bulletin_count():
                 return {'status':'error', 'reason':'invalid or empty bulletin id.'}
             web.problemList.remove_problem_list(web.problemList.id_to_name(int(flask.request.args.get('id'))))
             return {'status':'success'}
             
     elif flask.request.method == "POST":
+        if flask.session.get('username') != None and web.users.get_user_item(flask.session.get('username'))['premission'] == 2:
+            return {'status':'error', 'reason': 'premission denied'}
         request_item = flask.request.args.get('request')
         if request_item == None:
             return {'status':'error', 'reason': 'no request argument found.'}
@@ -548,6 +603,15 @@ def index_of_user_self():
 
 @app.route('/notebook', methods = ['GET'])
 def index_of_notebook():
+    if flask.session.get('username') != None and web.users.get_user_item(flask.session.get('username'))['premission'] == 2:
+        return createRootTemplate(
+            '错误',
+            flask.render_template(
+                'error.html',
+                config_file = web.config.configf,
+                reason = flask.session.get('username') + '已被封禁!请询问服务器管理员以了解原因.'
+            )
+        )
     logined = (flask.session.get('username') != None)
     if not logined:
         return flask.redirect('/login?reason=请先登录!')
@@ -564,6 +628,15 @@ def index_of_notebook():
 
 @app.route('/notebook/new', methods = ['GET'])
 def index_of_new_note():
+    if flask.session.get('username') != None and web.users.get_user_item(flask.session.get('username'))['premission'] == 2:
+        return createRootTemplate(
+            '错误',
+            flask.render_template(
+                'error.html',
+                config_file = web.config.configf,
+                reason = flask.session.get('username') + '已被封禁!请询问服务器管理员以了解原因.'
+            )
+        )
     logined = (flask.session.get('username') != None)
     if not logined:
         return flask.redirect('/login?reason=请先登录!')
@@ -574,6 +647,15 @@ def index_of_new_note():
 
 @app.route('/notebook/edit/<id>', methods = ['GET'])
 def indxe_of_edit_note(id):
+    if flask.session.get('username') != None and web.users.get_user_item(flask.session.get('username'))['premission'] == 2:
+        return createRootTemplate(
+            '错误',
+            flask.render_template(
+                'error.html',
+                config_file = web.config.configf,
+                reason = flask.session.get('username') + '已被封禁!请询问服务器管理员以了解原因.'
+            )
+        )
     logined = (flask.session.get('username') != None)
     if not logined:
         return flask.redirect('/login?reason=请先登录!')
@@ -596,6 +678,15 @@ def indxe_of_edit_note(id):
 
 @app.route('/notebook/preview/<id>', methods = ['GET'])
 def index_of_preview_note(id):
+    if flask.session.get('username') != None and web.users.get_user_item(flask.session.get('username'))['premission'] == 2:
+        return createRootTemplate(
+            '错误',
+            flask.render_template(
+                'error.html',
+                config_file = web.config.configf,
+                reason = flask.session.get('username') + '已被封禁!请询问服务器管理员以了解原因.'
+            )
+        )
     logined = (flask.session.get('username') != None)
     if not logined:
         return flask.redirect('/login?reason=请先登录!')
@@ -629,6 +720,15 @@ def index_of_preview_note(id):
 
 @app.route('/user/<username>',methods = ["GET"])
 def index_of_user_profile(username:str):
+    if flask.session.get('username') != None and web.users.get_user_item(flask.session.get('username'))['premission'] == 2:
+        return createRootTemplate(
+            '错误',
+            flask.render_template(
+                'error.html',
+                config_file = web.config.configf,
+                reason = flask.session.get('username') + '已被封禁!请询问服务器管理员以了解原因.'
+            )
+        )
     if(web.users.get_user_item(username) == None):
         return createRootTemplate(
             '错误',
@@ -672,6 +772,15 @@ def index_of_problems():
 
 @app.route('/problems/post', methods = ["GET"])
 def index_of_post_problem():
+    if flask.session.get('username') != None and web.users.get_user_item(flask.session.get('username'))['premission'] == 2:
+        return createRootTemplate(
+            '错误',
+            flask.render_template(
+                'error.html',
+                config_file = web.config.configf,
+                reason = flask.session.get('username') + '已被封禁!请询问服务器管理员以了解原因.'
+            )
+        )
     logined = (flask.session.get('username') != None)
     if not logined:
         return flask.redirect('/login?reason=请先登录!')
@@ -686,6 +795,15 @@ def index_of_post_problem():
 
 @app.route('/problems/edit', methods = ["GET"])
 def index_of_edit_problem():
+    if flask.session.get('username') != None and web.users.get_user_item(flask.session.get('username'))['premission'] == 2:
+        return createRootTemplate(
+            '错误',
+            flask.render_template(
+                'error.html',
+                config_file = web.config.configf,
+                reason = flask.session.get('username') + '已被封禁!请询问服务器管理员以了解原因.'
+            )
+        )
     logined = (flask.session.get('username') != None)
     if not logined:
         return flask.redirect('/login?reason=请先登录!')
@@ -739,6 +857,15 @@ def index_of_problem(pid:str):
 
 @app.route('/problems/<pid>/post', methods = ["GET"])
 def index_of_post_answer(pid):
+    if flask.session.get('username') != None and web.users.get_user_item(flask.session.get('username'))['premission'] == 2:
+        return createRootTemplate(
+            '错误',
+            flask.render_template(
+                'error.html',
+                config_file = web.config.configf,
+                reason = flask.session.get('username') + '已被封禁!请询问服务器管理员以了解原因.'
+            )
+        )
     logined = (flask.session.get('username') != None)
     if not logined:
         return flask.redirect('/login?reason=请先登录!')
@@ -766,6 +893,15 @@ def index_of_post_answer(pid):
 
 @app.route('/judge_status/<id>', methods = ["GET"])
 def index_of_judge_status(id):
+    if flask.session.get('username') != None and web.users.get_user_item(flask.session.get('username'))['premission'] == 2:
+        return createRootTemplate(
+            '错误',
+            flask.render_template(
+                'error.html',
+                config_file = web.config.configf,
+                reason = flask.session.get('username') + '已被封禁!请询问服务器管理员以了解原因.'
+            )
+        )
     id = int(id)
     if id >= judge.records.get_record_count():
         return createRootTemplate(
@@ -790,6 +926,15 @@ def index_of_judge_status(id):
 
 @app.route('/records')
 def index_of_judge_record():
+    if flask.session.get('username') != None and web.users.get_user_item(flask.session.get('username'))['premission'] == 2:
+        return createRootTemplate(
+            '错误',
+            flask.render_template(
+                'error.html',
+                config_file = web.config.configf,
+                reason = flask.session.get('username') + '已被封禁!请询问服务器管理员以了解原因.'
+            )
+        )
     prefix = 0
     if flask.request.args.get('index') != None:
         prefix = int(flask.request.args.get('index')) * 10
