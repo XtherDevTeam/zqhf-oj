@@ -6,5 +6,6 @@ global_config = {
 }
 
 database_server_config = {
-    'checker': 'password'
+    'checker': 'password',
+    'auto-backup-path': 'database/.db_backup',
 }

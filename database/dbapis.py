@@ -9,6 +9,13 @@ def saveDBFile():
             db = {}
         file.write(pickle.dumps(db))
 
+def exportDBFile(filename:str):
+    global db
+    with open(filename,'wb+') as file:
+        if db == None:
+            db = {}
+        file.write(pickle.dumps(db))
+
 def openDBFile():
     global db
     with open('database/main.db','rb+') as file:

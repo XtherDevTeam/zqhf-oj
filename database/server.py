@@ -1,4 +1,5 @@
-import pickle,socket,database.authlib,database.dbapis,threading,traceback,hashlib,time
+import os
+import pickle,socket,database.authlib,database.dbapis,threading,traceback,hashlib,time,config.global_config
 
 server = socket.socket
 clientStatus = {}
@@ -183,9 +184,11 @@ def run(addr:str,port:str, config:dict):
     server = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
     server.bind((addr,port))
     server.listen(128)
-    # server.setblocking(0)
+    server.setblocking(0)
+    now_time = time.time(), last_backup_time = time.time(), last_save_time = time.time()
     while True:
         try:
+            
             clientSocket, clientAddr = server.accept()
             print('get connection:' + str(clientAddr))
             # processing(clientSocket,clientAddr,config)
@@ -193,6 +196,16 @@ def run(addr:str,port:str, config:dict):
             threadpool[clientAddr].start()
             #threadpool[clientAddr].join()
         except BlockingIOError as e:
+            if now_time - last_save_time >= 300:
+                print('Event: Auto save started.')
+                database.dbapis.saveDBFile()
+                last_save_time = time.time()
+            if now_time - last_backup_time >= 3600:
+                print('Event: Auto backup started.')
+                time_str = time.strftime('%Y-%m-%d-%H-%M',time.localtime(time.time()))
+                database.dbapis.exportDBFile(config['auto-backup-path']+'/db-backup-' + time_str + '.db')
+                last_backup_time = time.time()
+            now_time = time.time()
             time.sleep(0.1)
             # print("I'm free\r\r\r\r\r\r\r\r",end='')
             pass
