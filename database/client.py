@@ -2,8 +2,13 @@ import pickle
 import socket
 import hashlib
 import time
+import threading
 
 client = socket.socket
+
+msg_queue = []
+msg_result = dict()
+queue_thread = threading.Thread()
 
 def __del__():
     close_connection()
@@ -85,6 +90,8 @@ def secure_recv(sendMessageWhileMd5Mismatch:bytes):
             data = recv()
         except Exception: pass
         if md5 == None: md5 = bytes()
+        now_time = time.time()
+        time.sleep(now_time - int(now_time))
     return data
     
 
@@ -107,29 +114,26 @@ def open_connection(server:str,port:int,username:str,password:str):
         return str(recv_data)
     # print(recv_data['status'])
     if recv_data['status'] == 'accept':
+        queue_init()
         return True
     elif recv_data['status'] == 'auth':
         secure_send(pickle.dumps([username,password]))
         recv_data = pickle.loads(secure_recv(pickle.dumps([username,password])))
         if recv_data['status'] == 'accept':
+            queue_init()
             return True
         elif recv_data['status'] == 'deny':
             return False
         else: False
     else: return False
+    
 
 def item_operate(tab:str,name:str,operation:str,data:dict = {}):
     global client
     if client == None:
         return ('FAIL','Client is hot connected to server')
-    secure_send(pickle.dumps({
-        'action': operation,
-        'object': 'item',
-        'table': tab,
-        'item': name,
-        'data': data
-    }))
-    recv_data = pickle.loads(secure_recv((pickle.dumps({
+
+    recv_data = pickle.loads(queue_communicate((pickle.dumps({
         'action': operation,
         'object': 'item',
         'table': tab,
@@ -143,13 +147,7 @@ def table_operate(tab:str,operation:str,data:dict = {}):
     global client
     if client == None:
         return ('FAIL','Client is hot connected to server')
-    secure_send(pickle.dumps({
-        'action': operation,
-        'object': 'table',
-        'table': tab,
-        'data': data
-    }))
-    recv_data = pickle.loads(secure_recv(pickle.dumps({
+    recv_data = pickle.loads(queue_communicate(pickle.dumps({
         'action': operation,
         'object': 'table',
         'table': tab,
@@ -157,6 +155,33 @@ def table_operate(tab:str,operation:str,data:dict = {}):
     })))
     if recv_data['status'] == 'OK': return ('OK',recv_data['data'])
     else: return ('FAIL',recv_data)
+
+def queue_processor():
+    while True:
+        while len(msg_queue) == 0:
+            time.sleep(0.01)
+            continue
+        msg = msg_queue[-1]
+        msg_queue.pop()
+        # msg is a tuple
+        secure_send(msg[1])
+        result = secure_recv(msg[1])
+        msg_result[msg[0]] = result
+
+def queue_communicate(data:bytes):
+    key = hashlib.md5(str(time.time()).encode('utf-8'))
+    msg_queue.append((key,data))
+    while msg_result.get(key) == None:
+        continue
+    data = msg_result.get(key)
+    del msg_result[key]
+    return data
+
+def queue_init():
+    queue_thread = threading.Thread(target=queue_processor)
+    queue_thread.start()
+    
+    print('Started queue processor')
 
 def close_connection():
     global client
