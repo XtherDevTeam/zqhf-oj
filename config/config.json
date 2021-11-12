@@ -16,5 +16,6 @@
         ["OI Wiki","https://oi-wiki.org/"],
         ["LibreOJ","https://loj.ac/"],
         ["重庆八中OJ","http://222.180.160.110:1024/"]
-    ]
+    ],
+    "banned-user-sign": "此用户因违反相关规定，账号已被停用，详细请询问管理员."
 }

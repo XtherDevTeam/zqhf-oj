@@ -6,6 +6,9 @@
         <div style="float: left;margin-left: 20px;">
             <h4>{{ user['name'] }}</h4>
             <h6 style="font-size: 13px;top: 40%;">{{ user['item']['descriptions']['description']|safe }}</h6>
+            {% if user['item']['premission'] == 2 %}
+            <span class="badge bg-danger">{{config_file['banned-user-sign']}}</span>
+            {% endif %}
         </div>
     </div>
     <br style="clear: both;">
