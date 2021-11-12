@@ -72,6 +72,7 @@ def recv_nbytes(n:int):
 def secure_recv(sendMessageWhileMd5Mismatch:bytes):
     global client
     data = bytes()
+    retry_cnt = 0
     md5 = recv_nbytes(32)
     if md5 == None: md5 = bytes()
     try:
@@ -81,6 +82,7 @@ def secure_recv(sendMessageWhileMd5Mismatch:bytes):
     # print('data:',md5)
     if(sendMessageWhileMd5Mismatch==bytes()): return data
     while hashlib.md5(data).hexdigest() != md5:
+        retry_cnt = retry_cnt + 1
         print("md5 mismatch:",hashlib.md5(data).hexdigest(),md5 )
         clean_buffer(client)
         secure_send(sendMessageWhileMd5Mismatch)
@@ -90,6 +92,7 @@ def secure_recv(sendMessageWhileMd5Mismatch:bytes):
             data = recv()
         except Exception: pass
         if md5 == None: md5 = bytes()
+        if retry_cnt >= 5: break
         now_time = time.time()
         time.sleep(now_time - int(now_time))
     return data
