@@ -185,9 +185,10 @@ def run(addr:str,port:str, config:dict):
     server.bind((addr,port))
     server.listen(128)
     server.setblocking(0)
-    now_time = time.time()
-    last_backup_time = time.time()
-    last_save_time = time.time()
+    now_time = 0
+    last_backup_time = 0
+    last_save_time = 0
+    database.dbapis.openDBFile()
     while True:
         try:
             
