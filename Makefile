@@ -6,6 +6,9 @@ init:
 dbrun:
 	python3 ./database_server.py
 
+clean_pyc:
+	rm -rf $(shell find * | grep pyc)
+
 runapp:
 	python3 ./server.py
 
