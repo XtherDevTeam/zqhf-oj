@@ -21,7 +21,7 @@
 
     <!-- <script src="/src/semantic/semantic.min.js"></script> -->
     <!-- <link rel="stylesheet" type="text/css" href="/src/semantic/semantic.min.css"> -->
-    <title>{{action}}·{{config_file['server-name']}}</title>
+    <title>{{action}} - {{config_file['server-name']}}</title>
 </head>
 <script>
 function logout() {
@@ -89,6 +89,7 @@ function logout() {
                 <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
                   <li><a class="dropdown-item" href="/user/self">用户设置</a></li>
                   <li><a class="dropdown-item" href="/notebook">我的笔记</a></li>
+                  <li><a class="dropdown-item" href="/user-image">我的图床</a></li>
                   <li><a class="dropdown-item" href="javascript:void(0);" onclick="logout()">登出</a></li>
                 </ul>
               </li>

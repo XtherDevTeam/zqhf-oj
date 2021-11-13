@@ -1,0 +1,50 @@
+<div class="container" style="margin: 0 auto;">
+    <br>
+    <h3>我上传的图片</h3>
+
+    <form action="/user-image/upload" method="post" enctype="multipart/form-data">
+        <input id="img" name="img" type="file" class="form-control"><br>
+        <button class="btn btn-primary" href="javascript:void(0);">上传图片</button>
+    </form>
+    <br>
+    <br>
+    <table class="table" style="width: 100%; table-layout: fixed; word-break: break-all;white-space: nowrap;">
+        <thead>
+            <tr>
+                <th>Picture</th>
+                <th style="width: 30%;">Url</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for i in range(userimg_cnt) %}
+            <tr>
+                <td>
+                    <img src="/user-image/{{user['name']}}/{{i}}" height="50px" width="auto"/>
+                </td>
+                <td>
+                    <a href="/user-image/{{user['name']}}/{{i}}">/user-image/{{user['name']}}/{{i}}</a>
+                </td>
+                <td>
+                    <button type="button" class="btn btn-primary" onclick="removePic({{i}})">删除</button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script>
+
+function removePic(i){
+    var xmlhttp = new XMLHttpRequest();
+    xmlhttp.open('GET','/user-image/' + i + '/delete',0);
+    xmlhttp.send();
+    j = JSON.parse(xmlhttp.responseText);
+    if(j['status'] == 'error'){
+        alert(j['reason']);
+    }
+    window.location = window.location;
+}
+
+</script>
