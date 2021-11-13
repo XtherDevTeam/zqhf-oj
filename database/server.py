@@ -135,7 +135,7 @@ def processing(clientSocket:socket.socket,clientAddr:tuple,config:dict):
                 # print('recv from ' + str(clientAddr) + ': ', recv_data)
                 if recv_data['action'] == 'disconnect':
                     if database.dbapis.db == None: database.dbapis.openDBFile()
-                    database.dbapis.saveDBFile()
+                    # database.dbapis.saveDBFile()
                     clientSocket.close()
                     break
                 if recv_data['object'] == 'item':
@@ -209,7 +209,7 @@ def run(addr:str,port:str, config:dict):
                 database.dbapis.exportDBFile(config['auto-backup-path']+'/db-backup-' + time_str + '.db')
                 last_backup_time = time.time()
             now_time = time.time()
-            time.sleep(0.1)
+            time.sleep(0.01)
             # print("I'm free\r\r\r\r\r\r\r\r",end='')
             pass
     server.close()

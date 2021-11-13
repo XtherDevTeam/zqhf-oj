@@ -6,15 +6,16 @@ import threading
 
 client = socket.socket
 
+server = 0
+username = 0
+password = 0
+port = 0
+
 msg_queue = []
 msg_result = dict()
 queue_thread = threading.Thread()
 
-def __del__():
-    close_connection()
-
-def recv():
-    global client
+def recv(client:socket.socket):
     client.setblocking(0)
     ranIntoInput = False
     result = bytes()
@@ -42,8 +43,7 @@ def clean_buffer(client:socket.socket):
         except Exception:
             return
 
-def recv_nbytes(n:int):
-    global client
+def recv_nbytes(client:socket.socket,n:int):
     client.setblocking(0)
     ranIntoInput = False
     begin_recv = time.time()
@@ -69,15 +69,14 @@ def recv_nbytes(n:int):
     client.setblocking(1)
     return result
 
-def secure_recv(sendMessageWhileMd5Mismatch:bytes):
-    global client
+def secure_recv(client:socket.socket,sendMessageWhileMd5Mismatch:bytes):
     data = bytes()
     retry_cnt = 0
-    md5 = recv_nbytes(32)
+    md5 = recv_nbytes(client,32)
     if md5 == None: md5 = bytes()
     try:
         md5 = md5.decode('utf-8')
-        data = recv()
+        data = recv(client)
     except Exception: pass
     # print('data:',md5)
     if(sendMessageWhileMd5Mismatch==bytes()): return data
@@ -85,11 +84,11 @@ def secure_recv(sendMessageWhileMd5Mismatch:bytes):
         retry_cnt = retry_cnt + 1
         print("md5 mismatch:",hashlib.md5(data).hexdigest(),md5 )
         clean_buffer(client)
-        secure_send(sendMessageWhileMd5Mismatch)
-        md5 = recv_nbytes(32)
+        secure_send(client,sendMessageWhileMd5Mismatch)
+        md5 = recv_nbytes(client,32)
         try:
             md5 = md5.decode('utf-8')
-            data = recv()
+            data = recv(client)
         except Exception: pass
         if md5 == None: md5 = bytes()
         if retry_cnt >= 5: break
@@ -98,38 +97,45 @@ def secure_recv(sendMessageWhileMd5Mismatch:bytes):
     return data
     
 
-def secure_send(data:bytes):
+def secure_send(client:socket.socket,data:bytes):
     clean_buffer(client) # 清理缓冲区未接受的数据
     client.send(hashlib.md5(data).hexdigest().encode('utf-8'))
     client.send(data)
 
 
-def open_connection(server:str,port:int,username:str,password:str):
-    global client
+def open_connection_real():
     client = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
     client.connect((server,port))
     # client.setblocking(0)
     # recv all blocked
-    recv_data = secure_recv(bytes())
+    recv_data = secure_recv(client,bytes())
     try:
         recv_data = pickle.loads(recv_data)
     except Exception as e:
         return str(recv_data)
     # print(recv_data['status'])
     if recv_data['status'] == 'accept':
-        queue_init()
-        return True
+        # queue_init()
+        return client
     elif recv_data['status'] == 'auth':
-        secure_send(pickle.dumps([username,password]))
-        recv_data = pickle.loads(secure_recv(pickle.dumps([username,password])))
+        secure_send(client,pickle.dumps([username,password]))
+        recv_data = pickle.loads(secure_recv(client,pickle.dumps([username,password])))
         if recv_data['status'] == 'accept':
-            queue_init()
-            return True
+            # queue_init()
+            return client
         elif recv_data['status'] == 'deny':
             return False
         else: False
     else: return False
     
+def open_connection(s:str,p:int,u:str,pwd:str):
+    global server
+    global port 
+    global username 
+    global password 
+    server,port,username,password = (s,p,u,pwd)
+    queue_init()
+    return True
 
 def item_operate(tab:str,name:str,operation:str,data:dict = {}):
     global client
@@ -167,17 +173,23 @@ def queue_processor():
         msg = msg_queue[-1]
         msg_queue.pop()
         # msg is a tuple
-        secure_send(msg[1])
-        result = secure_recv(msg[1])
+        secure_send(msg[2],msg[1])
+        result = secure_recv(msg[2],msg[1])
         msg_result[msg[0]] = result
 
 def queue_communicate(data:bytes):
+    client = open_connection_real()
+    if client == False: return False
+    if client == None: return None
+    
     key = hashlib.md5(str(time.time()).encode('utf-8'))
-    msg_queue.append((key,data))
+    msg_queue.append((key,data,client))
     while msg_result.get(key) == None:
         continue
     data = msg_result.get(key)
     del msg_result[key]
+    
+    close_connection(client)
     return data
 
 def queue_init():
@@ -186,10 +198,9 @@ def queue_init():
     
     print('Started queue processor')
 
-def close_connection():
-    global client
+def close_connection(client:socket.socket):
     if client == None:
         return
-    secure_send(pickle.dumps({'action':'disconnect'}))
+    secure_send(client,pickle.dumps({'action':'disconnect'}))
     client.close()
     return
