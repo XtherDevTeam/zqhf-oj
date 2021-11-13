@@ -1,4 +1,4 @@
-import multiprocessing as mp
+import threading
 import os,time
 from sys import stdout
 import judge.plugins,judge.records,traceback,judge.problems
@@ -7,23 +7,24 @@ problems = None
 status = ['']
 full_stdout = ['']
 status_queue_prefix = 0
-q = mp.Queue()
+queue = []
 
 def push_task(use_plugin:str,input:str,output:str,source:str,binary:str,author:str,pid:int):
-    q.put( [ use_plugin, input, source, binary, output,author,int(pid) ] )
-    # print('task pushed->',q)
+    queue.append( [ use_plugin, input, source, binary, output,author,int(pid) ] )
+    print('task pushed->',[ use_plugin, input, source, binary, output,author,int(pid) ])
     return judge.records.get_record_count()
 
-def task_processor(queue:mp.Queue):
-    # print('start',queue)
-    judge.plugins.load_plugins_list()
+def task_processor():
+    # judge.plugins.load_plugins_list()
     while True:
         try:
             global status_queue_prefix
-            while queue.empty():
+            while len(queue) == 0:
+                print('do nothing', end='\b\b\b\b\b\b\b\b\b\b')
                 time.sleep(0.1)
                 continue
-            now_item = queue.get()
+            now_item = queue[-1]
+            queue.pop()
             status[status_queue_prefix] = 'compiling'
             problem_details = judge.problems.get_problem(now_item[6])
             if problem_details == None:
@@ -77,6 +78,6 @@ def task_processor(queue:mp.Queue):
 def init():
     global tasks
     judge.plugins.load_plugins_list()
-    process = mp.Process(target=task_processor,args=(q,))
+    process = threading.Thread(target=task_processor)
     process.start()
-    # print(process,q)
+    print('judge task runner started')

@@ -541,7 +541,7 @@ def index_of_api():
                     flask.session.get('username'), userinfo['descriptions'])
             os.remove('./tmp/userimg.jpeg')
             return flask.redirect('/user/self')
-
+        
         if(request_item == 'updateUserSpace'):
             fill = web.users.get_user_item(flask.session['username'])[
                 'descriptions']
@@ -551,6 +551,7 @@ def index_of_api():
                 flask.session.get('username'), fill)
             # print(web.users.get_user_item(flask.session.get('username')))
             return {'status': 'success'}
+        
         elif(request_item == 'postProblem'):
             problem = flask.request.form.get('problem_json')
             if problem == None:
@@ -561,6 +562,7 @@ def index_of_api():
             judge.problems.createJudgeFile(
                 pid, problem["input"], problem["output"])
             return {'status': 'success'}
+        
         elif(request_item == 'editProblem'):
             problem = flask.request.form.get('problem_json')
             if problem == None:
@@ -572,6 +574,7 @@ def index_of_api():
             judge.problems.createJudgeFile(
                 pid, problem["input"], problem["output"])
             return {'status': 'success'}
+        
         elif(request_item == 'editNote'):
             note_content = json.loads(flask.request.form.get('json'))['info']
             id = flask.request.form.get('action')
@@ -582,6 +585,7 @@ def index_of_api():
                 web.notebook.edit_user_note(
                     flask.session['username'], int(id), note_content)
             return {'status': 'success'}
+        
         elif(request_item == 'submitAnswer'):
             content = flask.request.form.get('json')
             if content == None:
@@ -603,6 +607,7 @@ def index_of_api():
                 content['pid']
             )
             return {'status': 'success', 'task_id': task_id}
+        
         elif(request_item == 'postBulletin'):
             bulletin = flask.request.form.get('problem_json')
             if bulletin == None:

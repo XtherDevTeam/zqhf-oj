@@ -12,9 +12,13 @@
         </div>
     </div>
     <br style="clear: both;"><br>
+    {% if user['item']['premission'] != 2 %}
     <span class="badge bg-info">Join: {{ user['item']['descriptions']['join-time'] }}</span>
     <span class="badge bg-secondary">Ranking: {{ user['item']['ranking']+1 }}</span>
     <span class="badge bg-success">AC: {{ ACedCount }}</span>
+    {% else %}
+    <span class="badge bg-dark">被封禁用户的Ranking和AC不予显示</span>
+    {% endif %}
     <br><br>
     <div class="introduction">
     {{ introduction|safe }}
