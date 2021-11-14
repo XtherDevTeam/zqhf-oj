@@ -43,7 +43,9 @@ def set_user_descriptions(username:str, desciptions:dict):
 def get_user_descriptions(username:str):
     d = get_user_item(username)["descriptions"]
     d['introduction-html'] = markdown.markdown(urllib.parse.unquote(d['introduction']),extensions=[
-                'markdown_katex'
+                'markdown_katex',
+                'markdown.extensions.extra',
+                'markdown.extensions.codehilite'
             ],extension_configs={
                 'markdown_katex': {
                     'no_inline_svg': False,

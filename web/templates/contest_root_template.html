@@ -24,16 +24,6 @@
     <title>{{action}} - {{config_file['server-name']}}</title>
 </head>
 <script>
-function logout() {
-    let xmlhttp = new XMLHttpRequest();
-    xmlhttp.open( 'GET','/api?request=logout' , 0 );
-    xmlhttp.send();
-    if(JSON.parse(xmlhttp.responseText)['status'] == 'error'){
-        alert(JSON.parse(xmlhttp.responseText)['reason']);
-    }else{
-        window.location = '/';
-    }
-}
 </script>
 <body style="
   background-size: cover;
@@ -52,23 +42,17 @@ function logout() {
           <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
               <li class="nav-item">
-                <a class="nav-link active" aria-current="page" href="/">主页</a>
+                <a class="nav-link active" aria-current="page" href="//{{config_file['server-public-domain']}}:{{config_file['server-port']}}/">主站</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link" href="/problems">题库</a>
+                <a class="nav-link" aria-current="page" href="/contest">全部比赛</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link" href="/lists">题单</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="/records">提交记录</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="//{{config_file['server-public-domain']}}:{{config_file['contest-server-port']}}">比赛</a>
+                <a class="nav-link" aria-current="page" href="/mycontest">我参加的比赛</a>
               </li>
               {% if is_logined == False %}
               <li class="nav-item">
-                <a class="nav-link" href="/login">登入</a>
+                <a class="nav-link" href="//{{config_file['server-public-domain']}}:{{config_file['server-port']}}/login">登入</a>
               </li>
               {% else %}
               <li class="nav-item dropdown">
@@ -81,7 +65,7 @@ function logout() {
                   aria-expanded="false"
                 >
                   <img
-                    src="/api?request=userImg&name={{ user['name'] }}"
+                    src="//{{config_file['server-public-domain']}}:{{config_file['server-port']}}/api?request=userImg&name={{ user['name'] }}"
                     class="rounded-circle"
                     height="22"
                     alt=""
@@ -90,10 +74,8 @@ function logout() {
                   &nbsp;{{ user['name'] }}
                 </a>
                 <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-                  <li><a class="dropdown-item" href="/user/self">用户设置</a></li>
-                  <li><a class="dropdown-item" href="/notebook">我的笔记</a></li>
-                  <li><a class="dropdown-item" href="/user-image">我的图床</a></li>
-                  <li><a class="dropdown-item" href="javascript:void(0);" onclick="logout()">登出</a></li>
+                  <li><a class="dropdown-item" href="//{{config_file['server-public-domain']}}:{{config_file['server-port']}}/user/self">用户管理</a></li>
+                  <li><a class="dropdown-item" href="//{{config_file['server-public-domain']}}:{{config_file['server-port']}}/api?request=logout">登出</a></li>
                 </ul>
               </li>
               {% endif %}
@@ -117,7 +99,7 @@ function logout() {
 <script type="text/javascript" src="/src/mdb5/js/mdb.min.js"></script>
 <script>
 function fastgoto() {
-  window.location = '/problems/' + document.getElementById('fast-goto').value;
+  window.location = '//{{config_file['server-public-domain']}}:{{config_file['server-port']}}/problems/' + document.getElementById('fast-goto').value;
 }
 </script>
 </html>

@@ -1,7 +1,10 @@
 {
+    "server-public-domain": "xiaokang00010.top",
     "server-name": "肇庆华附在线评测系统",
     "server-host": "0.0.0.0",
     "server-port": 5914,
+    "contest-server-host": "0.0.0.0",
+    "contest-server-port": 5915,
     "invite-code": "zqhf",
     "use-judge-plugins": [
         "C",

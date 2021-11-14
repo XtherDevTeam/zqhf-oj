@@ -45,7 +45,9 @@ def get_articles(prefix:int,count:int):
         this = get_article(i)
         if this == None: continue
         this['html'] = markdown.markdown(this['content'],extensions=[
-            'markdown_katex'
+            'markdown_katex',
+            'markdown.extensions.extra',
+            'markdown.extensions.codehilite'
         ],extension_configs={
             'markdown_katex': {
                 'no_inline_svg': False,

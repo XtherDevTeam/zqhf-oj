@@ -44,7 +44,9 @@ def get_bulletin(index: int):
     try:
         # print(query_result)
         query_result[1]['content-html'] = markdown.markdown(urllib.parse.unquote(query_result[1]['content']), extensions=[
-            'markdown_katex'
+            'markdown_katex',
+            'markdown.extensions.extra',
+            'markdown.extensions.codehilite'
         ], extension_configs={
             'markdown_katex': {
                 'no_inline_svg': False,
@@ -442,77 +444,77 @@ def index_of_api():
     if flask.request.method == "GET":
         request_item = flask.request.args.get('request')
         if request_item == None:
-            return {'status': 'error', 'reason': 'no request argument found.'}
+            return {'status': 'error', 'reason': 'no request argument found.'}, '500', {'Access-Control-Allow-Origin': '*'}
         elif request_item == 'login':
             if flask.request.args.get('usr') == None or flask.request.args.get('pwd') == None:
-                return {'status': 'error', 'reason': 'username or password is empty.'}
+                return {'status': 'error', 'reason': 'username or password is empty.'}, '500', {'Access-Control-Allow-Origin': '*'}
             if web.users.get_user_item(flask.request.args.get('usr')) == None:
-                return {'status': 'error', 'reason': 'user not found.'}
+                return {'status': 'error', 'reason': 'user not found.'}, '500', {'Access-Control-Allow-Origin': '*'}
             if web.users.check_user(flask.request.args.get('usr'), flask.request.args.get('pwd')) == False:
-                return {'status': 'error', 'reason': 'username or password doesn\'t match'}
+                return {'status': 'error', 'reason': 'username or password doesn\'t match'}, '500', {'Access-Control-Allow-Origin': '*'}
             flask.session['username'] = flask.request.args.get('usr')
-            return {'status': 'success'}
+            return {'status': 'success'}, '200', {'Access-Control-Allow-Origin': '*'}
         elif request_item == 'userImg':
             name = flask.request.args.get('name')
             if name == None or name == '':
-                return {'status': 'error', 'reason': 'username is empty'}
+                return {'status': 'error', 'reason': 'username is empty'}, '500', {'Access-Control-Allow-Origin': '*'}
             item = web.users.get_user_item(name)
             if item == None:
-                return {'status': 'error', 'reason': 'user doesn\' t exist.'}
+                return {'status': 'error', 'reason': 'user doesn\' t exist.'}, '500', {'Access-Control-Allow-Origin': '*'}
             response = flask.make_response(base64.decodebytes(
                 item['descriptions']['user-img'][23:].encode('utf-8')))
             response.mimetype = 'image/jpeg'
-            return response
+            return response, '200', {'Access-Control-Allow-Origin': '*'}
         elif request_item == 'signup':
             if flask.request.args.get('usr') == None or flask.request.args.get('pwd') == None or flask.request.args.get('invitecode') == None:
-                return {'status': 'error', 'reason': 'username or password is empty.'}
+                return {'status': 'error', 'reason': 'username or password is empty.'}, '500', {'Access-Control-Allow-Origin': '*'}
             if web.users.get_user_item(flask.request.args.get('usr')) != None:
-                return {'status': 'error', 'reason': 'username already exist.'}
+                return {'status': 'error', 'reason': 'username already exist.'}, '500', {'Access-Control-Allow-Origin': '*'}
             if web.config.get_config_value('invite-code') != flask.request.args.get('invitecode'):
-                return {'status': 'error', 'reason': 'wrong invite code.'}
+                return {'status': 'error', 'reason': 'wrong invite code.'}, '500', {'Access-Control-Allow-Origin': '*'}
             web.users.new_user(flask.request.args.get(
                 'usr'), 1, flask.request.args.get('pwd'))
-            return {'status': 'success'}
+            return {'status': 'success'}, '200', {'Access-Control-Allow-Origin': '*'}
         elif request_item == 'logout':
             if flask.session.get('username') == None:
-                return {'status': 'error', 'reason': 'no matches cookies found.'}
+                return {'status': 'error', 'reason': 'no matches cookies found.'}, '500', {'Access-Control-Allow-Origin': '*'}
             else:
                 del flask.session['username']
-            return {'status': 'success'}
+            return {'status': 'success'}, '200', {'Access-Control-Allow-Origin': '*'}
         elif request_item == 'remove_problem':
             if flask.session.get('username') != None and web.users.get_user_item(flask.session.get('username'))['premission'] == 2:
-                return {'status': 'error', 'reason': 'premission denied'}
+                return {'status': 'error', 'reason': 'premission denied'}, '403', {'Access-Control-Allow-Origin': '*'}
             if flask.request.args.get('pid') == None or int(flask.request.args.get('pid')) > judge.problems.get_problems_count():
                 # print('count: ',judge.problems.get_problems_count())
-                return {'status': 'error', 'reason': 'invalid or empty problem id.'}
+                return {'status': 'error', 'reason': 'invalid or empty problem id.'}, '500', {'Access-Control-Allow-Origin': '*'}
             judge.problems.remove_problem(int(flask.request.args.get('pid')))
-            return {'status': 'success'}
+            return {'status': 'success'}, '200', {'Access-Control-Allow-Origin': '*'}
         elif request_item == 'remove_bulletin':
             if flask.session.get('username') != None and web.users.get_user_item(flask.session.get('username'))['premission'] == 2:
-                return {'status': 'error', 'reason': 'premission denied'}
+                return {'status': 'error', 'reason': 'premission denied'}, '500', {'Access-Control-Allow-Origin': '*'}
             if flask.request.args.get('id') == None or int(flask.request.args.get('id')) > get_bulletin_count():
-                return {'status': 'error', 'reason': 'invalid or empty bulletin id.'}
+                return {'status': 'error', 'reason': 'invalid or empty bulletin id.'}, '500', {'Access-Control-Allow-Origin': '*'}
             remove_bulletin(int(flask.request.args.get('id')))
 
-            return {'status': 'success'}
+            return {'status': 'success'}, '200', {'Access-Control-Allow-Origin': '*'}
         elif(request_item == 'removeNote'):
             if flask.session.get('username') != None and web.users.get_user_item(flask.session.get('username'))['premission'] == 2:
-                return {'status': 'error', 'reason': 'premission denied'}
+                return {'status': 'error', 'reason': 'premission denied'}, '500', {'Access-Control-Allow-Origin': '*'}
             id = flask.request.args.get('action')
             try:
                 id = int(id)
             except Exception:
-                return {'status': 'error', 'reason': 'invalid note number'}
+                return {'status': 'error', 'reason': 'invalid note number'}, '500', {'Access-Control-Allow-Origin': '*'}
             web.notebook.remove_note(flask.session['username'], id)
-            return {'status': 'success'}
+            return {'status': 'success'}, '200', {'Access-Control-Allow-Origin': '*'}
         elif request_item == 'remove_plist':
             if flask.session.get('username') != None and web.users.get_user_item(flask.session.get('username'))['premission'] == 2:
-                return {'status': 'error', 'reason': 'premission denied'}
+                return {'status': 'error', 'reason': 'premission denied'}, '500', {'Access-Control-Allow-Origin': '*'}
             if flask.request.args.get('id') == None or int(flask.request.args.get('id')) > get_bulletin_count():
-                return {'status': 'error', 'reason': 'invalid or empty bulletin id.'}
+                return {'status': 'error', 'reason': 'invalid or empty bulletin id.'}, '500', {'Access-Control-Allow-Origin': '*'}
             web.problemList.remove_problem_list(
                 web.problemList.id_to_name(int(flask.request.args.get('id'))))
-            return {'status': 'success'}
+            return {'status': 'success'}, '200', {'Access-Control-Allow-Origin': '*'}
 
     elif flask.request.method == "POST":
         if flask.session.get('username') != None and web.users.get_user_item(flask.session.get('username'))['premission'] == 2:
@@ -994,7 +996,7 @@ def run():
     # judge.records.init()
     # judge.problems.init()
     # web.users.init()
-    app.secret_key = 'zqhf_'+str(os.urandom(114514))
+    app.secret_key = 'zqhf_ojserver'
     app.run(web.config.get_config_value("server-host"),
             web.config.get_config_value("server-port"),
             debug=False,

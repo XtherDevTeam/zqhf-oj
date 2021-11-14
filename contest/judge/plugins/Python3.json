@@ -1,0 +1,8 @@
+{
+    "name": "Python3",
+    "file-type": "text/x-python",
+    "file-ext": "py",
+    "descriptions": "Execute Python3 script",
+    "compile_command": "",
+    "exec_command": "python3 $source_file"
+}

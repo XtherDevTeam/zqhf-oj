@@ -29,7 +29,9 @@ def edit_user_note(username:str,id:int,note:dict):
 
 def get_note_html(note:dict):
     note['html'] = markdown.markdown(urllib.parse.unquote(note['content']),extensions=[
-        'markdown_katex'
+        'markdown_katex',
+        'markdown.extensions.extra',
+        'markdown.extensions.codehilite'
     ],extension_configs={
         'markdown_katex': {
             'no_inline_svg': False,

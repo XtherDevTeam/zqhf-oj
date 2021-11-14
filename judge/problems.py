@@ -13,7 +13,9 @@ def get_problem(pid:int):
     if data[0]== 'FAIL': return None
     try:
         data[1]['description-html'] = markdown.markdown(urllib.parse.unquote(data[1]['description']),extensions=[
-            'markdown_katex'
+            'markdown_katex',
+            'markdown.extensions.extra',
+            'markdown.extensions.codehilite'
         ],extension_configs={
             'markdown_katex': {
                 'no_inline_svg': False,

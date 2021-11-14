@@ -1,0 +1,7 @@
+{
+    "name": "Xlang",
+    "file-type": "text/x-csrc",
+    "file-ext": "xlang",
+    "descriptions": "Running xlang program with XtimeVM",
+    "exec_command": "/opt/xlang/xlang file input=\"$source_file\" output=\"$binary_file\";/opt/xlang/xtimevm file=\"$binary_file\" memsize=1048576 devices+=\"/opt/xlang/device_test\""
+}
