@@ -1,6 +1,7 @@
 import json
 import os
 import sys
+from types import prepare_class
 import flask
 import web.config
 import web.users
@@ -969,12 +970,15 @@ def index_of_judge_record():
 @app.before_request
 def check_banned_status():
     logined = (flask.session.get('username') != None)
-    if not logined:
-        if flask.request.path.startswith('/src'): return None
-        if flask.request.path.startswith('/api'): return None
-        if flask.request.path.startswith('/login'): return None
-        if flask.request.path.startswith('/signup'): return None
-        return flask.redirect('/login?reason=请先登录!')
+    if web.config.configf["not-login-check"]:
+        if not logined:
+            if flask.request.path.startswith('/src'): return None
+            if flask.request.path.startswith('/api'): return None
+            if flask.request.path.startswith('/login'): return None
+            if flask.request.path.startswith('/signup'): return None
+            return flask.redirect('/login?reason=请先登录!')
+    else:
+        pass
     
     if flask.session.get('username') != None and web.users.get_user_item(flask.session.get('username'))['premission'] == 2:
         if flask.request.path.startswith('/src'): return None
