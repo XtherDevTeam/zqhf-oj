@@ -45,11 +45,19 @@ def item_operate(tab:str,name:str,operation:str,data:dict = {}):
     io1 = BytesIO(pickle.dumps(data))
     io1.seek(0, SEEK_SET)
 
-    recv_data = pickle.loads(requests.get(
-        "http://" + config.global_config.global_config['database-server-host'] + ":" + str(config.global_config.global_config['database-server-port']) + \
-        "/%s/%s/%s/%s" % (session, operation, tab, name),
-        files={'data': io1}
-    ).content)
+    recv_data = None
+
+    while True:
+        try:
+            recv_data = pickle.loads(requests.get(
+                "http://" + config.global_config.global_config['database-server-host'] + ":" + str(config.global_config.global_config['database-server-port']) + \
+                "/%s/%s/%s/%s" % (session, operation, tab, name),
+                files={'data': io1}
+            ).content)
+            break
+        except Exception:
+            time.sleep(0.01)
+        
     
     io1.close()
     
@@ -65,11 +73,16 @@ def table_operate(tab:str,operation:str,data:dict = {}):
     io1 = BytesIO(pickle.dumps(data))
     io1.seek(0, SEEK_SET)
     
-    recv_data = pickle.loads(requests.get(
-        "http://" + config.global_config.global_config['database-server-host'] + ":" + str(config.global_config.global_config['database-server-port']) + \
-        "/%s/%s/%s" % (session, operation, tab),
-        files={'data': io1}
-    ).content)
+    while True:
+        try:
+            recv_data = pickle.loads(requests.get(
+                "http://" + config.global_config.global_config['database-server-host'] + ":" + str(config.global_config.global_config['database-server-port']) + \
+                "/%s/%s/%s" % (session, operation, tab),
+                files={'data': io1}
+            ).content)
+            break
+        except Exception:
+            time.sleep(0.01)
     
     io1.close()
     

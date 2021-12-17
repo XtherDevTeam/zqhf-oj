@@ -1006,7 +1006,8 @@ def run():
     app.run(web.config.get_config_value("server-host"),
             web.config.get_config_value("server-port"),
             debug=False,
-            )
+            processes=True
+    )
 
 
 @atexit.register

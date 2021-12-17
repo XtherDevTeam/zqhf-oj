@@ -128,7 +128,7 @@ def auto_backup_proc():
     last_backup_time = 0
     last_save_time = 0
     while True:
-        if now_time - last_save_time >= 10:
+        if now_time - last_save_time >= 300:
             print('Event: Auto save started.')
             database.dbapis.saveDBFile()
             last_save_time = time.time()
@@ -138,7 +138,7 @@ def auto_backup_proc():
             database.dbapis.exportDBFile(config.global_config.database_server_config['auto-backup-path']+'/db-backup-' + time_str + '.db')
             last_backup_time = time.time()
         now_time = time.time()
-        time.sleep(0.01)
+        time.sleep(0.1)
         pass
     
 def run_server():
