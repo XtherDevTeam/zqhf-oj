@@ -2,11 +2,18 @@ from io import BytesIO
 import os
 import pickle,database.authlib,database.dbapis,threading,hashlib,time,config.global_config,flask
 
-from werkzeug.wrappers import response
+# from werkzeug.wrappers import response
 
 server = flask.Flask(__name__)
 
 threadpool = {}
+
+def covertToNum(numstr:str):
+    num = numstr
+    if num.isnumeric():
+        num = int(num)
+    
+    return num
 
 class DataRecvError(Exception):
     def __init__(self,str):
@@ -29,6 +36,8 @@ def response_pickle(data):
 def get_data(session, table, name):
     if not check_session(session):
         return response_pickle({"status": "error", "message": "invalid session"})
+    
+    name = covertToNum(name)
     return response_pickle(database.dbapis.queryItem(table, name))
 
 @server.route('/<session>/change/<table>/<name>')
@@ -36,6 +45,7 @@ def set_data(session, table, name):
     if not check_session(session):
         return response_pickle({"status": "error", "message": "invalid session"})
     
+    name = covertToNum(name)
     data = BytesIO(bytes())
     flask.request.files.get("data").save(data)
     data.seek(0,os.SEEK_SET)
@@ -46,6 +56,7 @@ def create_data(session, table, name):
     if not check_session(session):
         return response_pickle({"status": "error", "message": "invalid session"})
     
+    name = covertToNum(name)
     data = BytesIO(bytes())
     flask.request.files.get("data").save(data)
     data.seek(0,os.SEEK_SET)
@@ -91,6 +102,7 @@ def remove_data(session, table, name):
     if not check_session(session):
         return response_pickle({"status": "error", "message": "invalid session"})
     
+    name = covertToNum(name)
     return response_pickle(database.dbapis.removeItem(table, name))
 
 @server.route("/login/<username>:<password>")
