@@ -3,6 +3,12 @@
     display: block;
     background:rgba(255,255,255,0.9);
 }
+
+.container img{
+    width: fit-content;
+    height: auto;
+}
+
 .footer{
     margin: 0 auto;
     z-index: -114;
