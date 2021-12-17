@@ -46,10 +46,10 @@ def set_data(session, table, name):
         return response_pickle({"status": "error", "message": "invalid session"})
     
     name = covertToNum(name)
-    data = BytesIO(bytes())
-    flask.request.files.get("data").save(data)
-    data.seek(0,os.SEEK_SET)
-    return response_pickle(database.dbapis.changeItem(table, name, data.read()))
+    with BytesIO(bytes()) as data:
+        flask.request.files.get("data").save(data)
+        data.seek(0,os.SEEK_SET)
+        return response_pickle(database.dbapis.changeItem(table, name, pickle.loads(data.read())))
 
 @server.route('/<session>/new/<table>/<name>')
 def create_data(session, table, name):
@@ -57,10 +57,10 @@ def create_data(session, table, name):
         return response_pickle({"status": "error", "message": "invalid session"})
     
     name = covertToNum(name)
-    data = BytesIO(bytes())
-    flask.request.files.get("data").save(data)
-    data.seek(0,os.SEEK_SET)
-    return response_pickle(database.dbapis.createItem(table, name, data.read()))
+    with BytesIO(bytes()) as data:
+        flask.request.files.get("data").save(data)
+        data.seek(0,os.SEEK_SET)
+        return response_pickle(database.dbapis.createItem(table, name, pickle.loads(data.read())))
 
 @server.route("/<session>/new/<table>@<type>")
 def create_table(session, table, type):
@@ -128,7 +128,7 @@ def auto_backup_proc():
     last_backup_time = 0
     last_save_time = 0
     while True:
-        if now_time - last_save_time >= 300:
+        if now_time - last_save_time >= 10:
             print('Event: Auto save started.')
             database.dbapis.saveDBFile()
             last_save_time = time.time()
@@ -143,6 +143,6 @@ def auto_backup_proc():
     
 def run_server():
     database.dbapis.openDBFile()
-    server.run( config.global_config.global_config['database-server-host'], config.global_config.global_config['database-server-port'] )
     threadpool['autobackup'] = threading.Thread(target=auto_backup_proc)
-    threadpool['autobackup'].run()
+    threadpool['autobackup'].start()
+    server.run( config.global_config.global_config['database-server-host'], config.global_config.global_config['database-server-port'] )

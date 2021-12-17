@@ -176,7 +176,7 @@ def index_of_problem_lists():
 def index_of_user_image_main():
     logined = (flask.session.get('username') != None)
     
-    userimg_cnt = web.image.get_image_cnt(flask.session.get('username'))
+    userimg_cnt = web.image.get_images_count(flask.session.get('username'))
     
     return createRootTemplate(
         '我的图床',
@@ -192,12 +192,13 @@ def index_of_user_image_main():
 @app.route('/user-image/upload', methods=["POST"])
 def index_of_image_upload():
     logined = (flask.session.get('username') != None)
-    
+    print('upload request got.')
     img = flask.request.files.get('img')
     dest = io.BytesIO()
     img.save(dest)
     dest.seek(0)
     web.image.new_image(flask.session['username'],dest.read())
+    dest.close()
     del dest
     return flask.redirect('/user-image')
 

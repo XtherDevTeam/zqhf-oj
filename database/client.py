@@ -1,4 +1,5 @@
 from io import BytesIO
+from os import SEEK_SET
 import pickle
 import socket
 import hashlib
@@ -15,8 +16,6 @@ username = 0
 password = 0
 port = 0
 
-msg_queue = []
-msg_result = dict()
 queue_thread = threading.Thread()
 
 
@@ -43,11 +42,16 @@ def item_operate(tab:str,name:str,operation:str,data:dict = {}):
     if session == None:
         return ('FAIL','Client is hot connected to server')
 
+    io1 = BytesIO(pickle.dumps(data))
+    io1.seek(0, SEEK_SET)
+
     recv_data = pickle.loads(requests.get(
         "http://" + config.global_config.global_config['database-server-host'] + ":" + str(config.global_config.global_config['database-server-port']) + \
         "/%s/%s/%s/%s" % (session, operation, tab, name),
-        files={'data': BytesIO(pickle.dumps(data))}
+        files={'data': io1}
     ).content)
+    
+    io1.close()
     
     if recv_data['status'] == 'OK': return ('OK',recv_data['data'])
     else: return ('FAIL',recv_data['data'])
@@ -57,11 +61,18 @@ def table_operate(tab:str,operation:str,data:dict = {}):
     print("Session", session)
     if session == None:
         return ('FAIL','Client is hot connected to server')
+    
+    io1 = BytesIO(pickle.dumps(data))
+    io1.seek(0, SEEK_SET)
+    
     recv_data = pickle.loads(requests.get(
         "http://" + config.global_config.global_config['database-server-host'] + ":" + str(config.global_config.global_config['database-server-port']) + \
         "/%s/%s/%s" % (session, operation, tab),
-        files={'data': BytesIO(pickle.dumps(data))}
+        files={'data': io1}
     ).content)
+    
+    io1.close()
+    
     # return session
     if recv_data['status'] == 'OK': return ('OK',recv_data['data'])
     else: return ('FAIL',recv_data)
