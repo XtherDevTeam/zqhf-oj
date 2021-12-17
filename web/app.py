@@ -145,7 +145,8 @@ def index():
             user={'name': flask.session.get('username'), 'item': web.users.get_user_item(
                 flask.session.get('username'))},
             board=board,
-            rankingTop10=web.ranking.get_rankings_per_page(0)
+            rankingTop10=web.ranking.get_rankings_per_page(0),
+            is_logined = logined
         )
     )
 

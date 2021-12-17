@@ -21,5 +21,5 @@
         ["重庆八中OJ","http://222.180.160.110:1024/"]
     ],
     "banned-user-sign": "此用户因违反相关规定，账号已被停用，详细请询问管理员.",
-    "not-login-check": true
+    "not-login-check": false
 }

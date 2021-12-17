@@ -1,215 +1,136 @@
+from io import BytesIO
 import os
-import pickle,socket,database.authlib,database.dbapis,threading,traceback,hashlib,time,config.global_config
+import pickle,database.authlib,database.dbapis,threading,hashlib,time,config.global_config,flask
 
-server = socket.socket
-clientStatus = {}
+from werkzeug.wrappers import response
+
+server = flask.Flask(__name__)
+
 threadpool = {}
 
 class DataRecvError(Exception):
     def __init__(self,str):
         super().__init__(self,str)
 
-def make_repeat(_str:str,c:int = 32):
-    s = ''
-    for i in range(0,c):
-        s+=_str
-    return s
+session_pool = []
 
-def make_resend_packet():
-    hash = make_repeat('f',32) + '1145141919810'
-    return hash.encode('utf-8')
+def check_session(session:str):
+    if session_pool.count(session) == False: return False
+    return True
+
+def remove_session(session:str):
+    if session_pool.count(session):
+        del session_pool[session_pool.index(session)]
+
+def response_pickle(data):
+    return flask.send_file(BytesIO(pickle.dumps(data)), 'application/zqhf-oj-database-response')
+
+@server.route('/<session>/get/<table>/<name>')
+def get_data(session, table, name):
+    if not check_session(session):
+        return response_pickle({"status": "error", "message": "invalid session"})
+    return response_pickle(database.dbapis.queryItem(table, name))
+
+@server.route('/<session>/change/<table>/<name>')
+def set_data(session, table, name):
+    if not check_session(session):
+        return response_pickle({"status": "error", "message": "invalid session"})
     
-def secure_send(client:socket.socket,data:bytes):
-    client.send(hashlib.md5(data).hexdigest().encode('utf-8'))
-    client.send(data)
+    data = BytesIO(bytes())
+    flask.request.files.get("data").save(data)
+    data.seek(0,os.SEEK_SET)
+    return response_pickle(database.dbapis.changeItem(table, name, data.read()))
 
-def recv_all(client:socket.socket):
-    client.setblocking(0)
-    ranIntoInput = False
-    begin_time = time.time()
-    result = bytes()
-    while True:
-        try:
-            now = client.recv(1024)
-            if len(now) == 0:
-                break
-            result += now
-            ranIntoInput = True
-        except BlockingIOError as e:
-            if int(time.time()) - int(begin_time) > 1: break
-            if ranIntoInput: break
-            # time.sleep(0.01)
-    return result
-
-def clean_buffer(client:socket.socket):
-    client.setblocking(0)
-    while True:
-        try:
-            if client.recv(1) == b'': return
-        except Exception:
-            return
-
-def recv_nbytes(client:socket.socket,n:int):
-    #global client
-    client.setblocking(0)
-    ranIntoInput = False
-    begin_time = time.time()
-    result = bytes()
-    while True:
-        try:
-            if n < 1024:
-                now = client.recv(n)
-                return now
-            else:
-                now = client.recv(1024)
-            now -= 1024
-            if len(now) == n:
-                break
-            result += now
-            ranIntoInput = True
-        except BlockingIOError as e:
-            if int(time.time()) - int(begin_time) > 1: break
-            if ranIntoInput: break
-            # time.sleep(0.01)
-    if len(result) != n: return None
-    client.setblocking(1)
-    return result
-
-def secure_recv(client:socket.socket):
-    global server
-    data = bytes()
-    md5 = recv_nbytes(client,32)
-    if md5 == None: 
-        raise DataRecvError("no data fetched")
-    try:
-        md5 = md5.decode('utf-8')
-        data = recv_all(client)
-    except Exception:
-        pass
+@server.route('/<session>/new/<table>/<name>')
+def create_data(session, table, name):
+    if not check_session(session):
+        return response_pickle({"status": "error", "message": "invalid session"})
     
-    while hashlib.md5(data).hexdigest() != md5:
-        clean_buffer(client)
-        client.send(make_resend_packet())
-        md5 = recv_nbytes(client,32)
-        if md5 == None: continue
-        try:
-            md5 = md5.decode('utf-8')
-            data = recv_all(client)
-        except Exception:
-            # time.sleep(0.1)
-            pass
+    data = BytesIO(bytes())
+    flask.request.files.get("data").save(data)
+    data.seek(0,os.SEEK_SET)
+    return response_pickle(database.dbapis.createItem(table, name, data.read()))
 
-    return data
+@server.route("/<session>/new/<table>@<type>")
+def create_table(session, table, type):
+    if not check_session(session):
+        return response_pickle({"status": "error", "message": "invalid session"})
+    
+    return response_pickle(database.dbapis.createTable(table, type))
 
+@server.route("/<session>/delete/<table>")
+def remove_table(session, table):
+    if not check_session(session):
+        return response_pickle({"status": "error", "message": "invalid session"})
+    
+    return response_pickle(database.dbapis.removeTable(table))
 
-def processing(clientSocket:socket.socket,clientAddr:tuple,config:dict):
-    # clientSocket.setblocking(0)
-    while True:
-        try:
-            if clientStatus.get(clientAddr) == None:
-                if config.get('checker') == None or config.get('checker') == 'accept':
-                    print(clientSocket,secure_send(clientSocket, pickle.dumps( {'status':'accept','data':''} ) ))
-                    clientStatus[clientAddr] = 'OK'
-                    print('send accept message')
-                else:
-                    clientStatus[clientAddr] = 'CHECK'
-                    secure_send(clientSocket,pickle.dumps( {'status':'auth','data':config.get('checker')} ) )
-                    print('send check message')
-            elif clientStatus.get(clientAddr) == 'CHECK':
-                recv_data = secure_recv(clientSocket)
-                # print(recv_data)
-                recv_data = pickle.loads(recv_data)
-                print('checking account:', recv_data, database.authlib.checkUserInfomation(recv_data[0],recv_data[1]))
-                result = database.authlib.checkUserInfomation(recv_data[0],recv_data[1])
-                if result == False:
-                    secure_send(clientSocket,pickle.dumps( {'status':'deny','data':''} ) )
-                    clientSocket.close()
-                    break
-                else: secure_send(clientSocket,pickle.dumps( {'status':'accept','data':''} ) )
-                clientStatus[clientAddr] = 'OK'
-            elif clientStatus.get(clientAddr) == 'OK':
-                # print('start process query command: ',begin_time)
-                begin_time = int(time.time())
-                recv_data = pickle.loads(secure_recv(clientSocket))
-                query_time = int(time.time())
-                # print('recv from ' + str(clientAddr) + ': ', recv_data)
-                if recv_data['action'] == 'disconnect':
-                    if database.dbapis.db == None: database.dbapis.openDBFile()
-                    # database.dbapis.saveDBFile()
-                    clientSocket.close()
-                    break
-                if recv_data['object'] == 'item':
-                    if recv_data['action'] == 'new':
-                        secure_send(clientSocket,pickle.dumps( database.dbapis.createItem(recv_data['table'],recv_data['item'],recv_data['data']) ) )
-                    elif recv_data['action'] == 'delete':
-                        secure_send(clientSocket,pickle.dumps( database.dbapis.removeItem(recv_data['table'],recv_data['item']) ) )
-                    elif recv_data['action'] == 'change':
-                        secure_send(clientSocket,pickle.dumps( database.dbapis.changeItem(recv_data['table'],recv_data['item'],recv_data['data']) ) )
-                    elif recv_data['action'] == 'get':
-                        secure_send(clientSocket,pickle.dumps( database.dbapis.queryItem(recv_data['table'],recv_data['item']) ) )
-                    else:
-                        secure_send(clientSocket,pickle.dumps( {'status':'FAIL','data':'unknown command'} ) )
-                elif recv_data['object'] == 'table':
-                        if recv_data['action'] == 'new':
-                            secure_send(clientSocket, pickle.dumps( database.dbapis.createTable(recv_data['table'],recv_data['data']) ) )
-                        elif recv_data['action'] == 'delete':
-                            secure_send(clientSocket,pickle.dumps( database.dbapis.removeTable(recv_data['table']) ) )
-                        elif recv_data['action'] == 'info':
-                            secure_send(clientSocket,pickle.dumps( database.dbapis.getTableInfo(recv_data['table']) ) )
-                        elif recv_data['action'] == 'all':
-                            secure_send(clientSocket,pickle.dumps( database.dbapis.getTableData(recv_data['table']) ) )
-                        elif recv_data['action'] == 'set':
-                            secure_send(clientSocket,pickle.dumps( database.dbapis.setTableData(recv_data['table'],recv_data['data']) ) )
-                        elif recv_data['action'] == 'clear':
-                            secure_send(clientSocket,pickle.dumps( database.dbapis.createTable(recv_data['table']) ) )
-                        else:
-                            secure_send(clientSocket,pickle.dumps( {'status':'FAIL','data':'unknown command'} ) )
-                else:
-                    secure_send(clientSocket,pickle.dumps( {'status':'FAIL','data':'unknown object'} ) )
-                end_time = int(time.time())
-                print('end query in ', end_time - begin_time, end_time - query_time, query_time - begin_time)
-        except DataRecvError as e:
-            # print(threading.currentThread().name, ' sleep\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b',end='')
-            time.sleep(0.1)
-        except Exception as e:
-            traceback.print_exc()
-            # secure_send(clientSocket,pickle.dumps({'status':'FAIL','data': str(e)}))
-            # clientSocket.close()
-            if database.dbapis.db == None: database.dbapis.openDBFile()
-            database.dbapis.saveDBFile()
-            print('exited')
-            return
+@server.route("/<session>/all/<table>")
+def table_data(session, table):
+    if not check_session(session):
+        return response_pickle({"status": "error", "message": "invalid session"})
+    
+    return response_pickle(database.dbapis.getTableData(table))
 
-def run(addr:str,port:str, config:dict):
-    server = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-    server.bind((addr,port))
-    server.listen(128)
-    server.setblocking(0)
+@server.route("/<session>/info/<table>")
+def table_info(session, table):
+    if not check_session(session):
+        return response_pickle({"status": "error", "message": "invalid session"})
+    
+    return response_pickle(database.dbapis.getTableInfo(table))
+
+@server.route("/<session>/clear/<table>")
+def table_clear(session, table):
+    if not check_session(session):
+        return response_pickle({"status": "error", "message": "invalid session"})
+    
+    return response_pickle(database.dbapis.createTable(table))
+
+@server.route("/<session>/delete/<table>/<name>")
+def remove_data(session, table, name):
+    if not check_session(session):
+        return response_pickle({"status": "error", "message": "invalid session"})
+    
+    return response_pickle(database.dbapis.removeItem(table, name))
+
+@server.route("/login/<username>:<password>")
+def user_login(username, password):
+    if database.authlib.checkUserInfomation(username, password):
+        session = hashlib.md5((username + ":" + password + "_" + str(int(time.time()))).encode('utf-8')).hexdigest()
+        session_pool.append(session)
+        return response_pickle({"status": "OK", "data": session})
+    else:
+        return response_pickle({"status": "error", "message": "incorrect login"})
+    
+@server.route("/<session>/logout")
+def user_logout(session):
+    if not check_session(session):
+        return response_pickle({"status": "error", "message": "invalid session"})
+    
+    remove_session(session)
+    return response_pickle({"status": "OK"})
+    
+    
+def auto_backup_proc():
     now_time = 0
     last_backup_time = 0
     last_save_time = 0
-    database.dbapis.openDBFile()
     while True:
-        try:
-            
-            clientSocket, clientAddr = server.accept()
-            print('get connection:' + str(clientAddr))
-            # processing(clientSocket,clientAddr,config)
-            threadpool[clientAddr] = threading.Thread(target=processing,args=(clientSocket,clientAddr,config))
-            threadpool[clientAddr].start()
-            #threadpool[clientAddr].join()
-        except BlockingIOError as e:
-            if now_time - last_save_time >= 300:
-                print('Event: Auto save started.')
-                database.dbapis.saveDBFile()
-                last_save_time = time.time()
-            if now_time - last_backup_time >= 3600:
-                print('Event: Auto backup started.')
-                time_str = time.strftime('%Y-%m-%d-%H-%M',time.localtime(time.time()))
-                database.dbapis.exportDBFile(config['auto-backup-path']+'/db-backup-' + time_str + '.db')
-                last_backup_time = time.time()
-            now_time = time.time()
-            time.sleep(0.01)
-            # print("I'm free\r\r\r\r\r\r\r\r",end='')
-            pass
-    server.close()
+        if now_time - last_save_time >= 300:
+            print('Event: Auto save started.')
+            database.dbapis.saveDBFile()
+            last_save_time = time.time()
+        if now_time - last_backup_time >= 3600:
+            print('Event: Auto backup started.')
+            time_str = time.strftime('%Y-%m-%d-%H-%M',time.localtime(time.time()))
+            database.dbapis.exportDBFile(config.global_config.database_server_config['auto-backup-path']+'/db-backup-' + time_str + '.db')
+            last_backup_time = time.time()
+        now_time = time.time()
+        time.sleep(0.01)
+        pass
+    
+def run_server():
+    database.dbapis.openDBFile()
+    server.run( config.global_config.global_config['database-server-host'], config.global_config.global_config['database-server-port'] )
+    threadpool['autobackup'] = threading.Thread(target=auto_backup_proc)
+    threadpool['autobackup'].run()
