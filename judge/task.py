@@ -27,6 +27,7 @@ def task_processor():
             queue.pop()
             status[status_queue_prefix] = 'compiling'
             problem_details = judge.problems.get_problem(now_item[6])
+            jid = judge.records.create_executing_task_record( ["Judging","Please wait...",now_item[5],now_item[6]] )
             if problem_details == None:
                 print('invalid problem!', type(now_item[6]))
                 continue
@@ -68,7 +69,7 @@ def task_processor():
                             break
                 if status[status_queue_prefix] == 'compiling': status[status_queue_prefix] = 'Accepted'
             full_stdout[status_queue_prefix] = 'stdout >\n' + execute_result[1] + '\n\nstderr >\n' + execute_result[2] + '\n\n' + 'returncode >\n' + str(execute_result[3]) + '\n'
-            judge.records.push_record( [status[0],full_stdout[0],now_item[5],now_item[6]] )
+            judge.records.push_record( [status[0],full_stdout[0],now_item[5],now_item[6]], jid )
             # print(execute_result)
         except Exception as e:
             traceback.print_exc()

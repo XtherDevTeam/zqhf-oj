@@ -40,10 +40,14 @@ def get_record_count():
     # print(query_info)
     return query_info[1]['total_data_cnt']
 
-def push_record(info:list):
-    temp = info
+def create_executing_task_record(info:list):
     jid = get_record_count()
     database.client.item_operate('oj_records',jid,'new',info)
+    return jid
+
+def push_record(info:list, jid:int):
+    temp = info
+    database.client.item_operate('oj_records',jid,'change',info)
     # print(info)
     if temp[0] == 'Accepted':
         print('AC:' , info[2], info[3])
