@@ -205,7 +205,7 @@ def submit(judgeServerHost, judgeServerPort, judgePlugin, input, output, time_li
     ))
     recv_data = json.loads(requests.get("http://%s:%d/submit" % (judgeServerHost, judgeServerPort), files={'data': packed_data}).content)
     push_record(
-        [recv_data['status'], 'stdout> <br>' + recv_data['stdout'] + "<br>stderr> <br>" + recv_data['stderr'], author, pid],
+        [recv_data['status'], 'stdout> <br>' + recv_data['stdout'] + "<br><br>stderr> <br>" + recv_data['stderr'], author, pid],
         jid
     )
     

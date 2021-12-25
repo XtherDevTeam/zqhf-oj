@@ -12,5 +12,5 @@ clean_pyc:
 runapp:
 	python3 ./server.py
 
-run: XmediaCenter.py
-	./server.py
+jsrun:
+	python3 judge-server.py
