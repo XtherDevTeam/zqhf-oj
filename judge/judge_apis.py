@@ -1,4 +1,9 @@
-import os,sys,json,urllib.parse,database.client,config.global_config,markdown
+import io
+import requests, json, pickle
+
+import os,sys,json,urllib.parse,database.client,config.global_config,markdown,web.users,web.ranking
+
+plugins_list = []
 
 def init():
     print(__name__,'opened connection: ',database.client.open_connection(
@@ -7,6 +12,12 @@ def init():
         config.global_config.global_config['database-server-username'],
         config.global_config.global_config['database-server-password']
     ))
+    global plugins_list
+    plugins_list = []
+    origin_list = web.config.get_config_value('use-judge-plugins')
+    for i in origin_list:
+        with open('judge/plugins/' + i + '.json','r+') as file:
+            plugins_list.append(json.loads(file.read()))
 
 def get_problem(pid:int):
     data = database.client.item_operate('oj_problems',pid,'get')
@@ -133,5 +144,71 @@ def get_selected_problems_detail(pids:list):
         query['id'] = i
         result.append(query)
     return result
+
+def get_record(jid:int):
+    result = database.client.table_operate('oj_records','info')
+    if result[0] == 'FAIL': return None
+    if jid >= result[1]['total_data_cnt']:
+        return None
+    return database.client.item_operate('oj_records',jid,'get')[1]
+
+def get_records_per_page(prefix:int):
+    query_info = database.client.table_operate('oj_records','info')
+    # print(query_info,prefix,10)
+    result = []
+    for i in range(query_info[1]['total_data_cnt'] - prefix - 10,query_info[1]['total_data_cnt'] - prefix):
+        if i < 0: continue
+        if i == query_info[1]['total_data_cnt']: break
+        temp = get_record(i)
+        temp = [temp, {
+            'record_id': i,
+        }]
+        result.append(temp)
+    result.reverse()
+    return result
+
+def get_record_count():
+    query_info = database.client.table_operate('oj_records','info')
+    # print(query_info)
+    return query_info[1]['total_data_cnt']
+
+def create_executing_task_record(info:list):
+    jid = get_record_count()
+    database.client.item_operate('oj_records',jid,'new',info)
+    return jid
+
+def push_record(info:list, jid:int):
+    # temp = info
+    database.client.item_operate('oj_records',jid,'change',info)
+    # print(info)
+    if info[0] == 'Accepted':
+        print('AC:' , info[2], info[3])
+        description = web.users.get_user_descriptions(info[2])
+        if description['solved-problems'].count(int(info[3])) == 0:
+            description['solved-problems'].append(int(info[3]))
+            web.users.set_user_descriptions(info[2],description)
+            web.ranking.init_ranking_table()
+    return jid
+
+def submit(judgeServerHost, judgeServerPort, judgePlugin, input, output, time_limit, mem_limit, env_variables, author, pid):
+    jid = create_executing_task_record(['Judging', 'Please wait...', author, pid])
+    
+    packed_data = io.BytesIO(pickle.dumps(
+        {
+            'plugin': judgePlugin,
+            'input': input,
+            'output': output,
+            'time_limit': time_limit,
+            'mem_limit': mem_limit,
+            'env_variables': env_variables
+        }
+    ))
+    recv_data = json.loads(requests.get("http://%s:%d/submit" % (judgeServerHost, judgeServerPort), files={'data': packed_data}).content)
+    push_record(
+        [recv_data['status'], 'stdout> <br>' + recv_data['stdout'] + "<br>stderr> <br>" + recv_data['stderr'], author, pid],
+        jid
+    )
+    
+    return jid
 
 init()

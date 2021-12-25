@@ -7,7 +7,7 @@ import web.users
 import demjson
 import urllib.parse
 import contest.judge.task
-import contest.judge.plugins
+import contest.judge.judge_apis
 import atexit
 import base64
 import time
@@ -50,7 +50,7 @@ def run():
     contest.judge.task.init()
     # judge.records.web.users.init()
     # judge.records.init()
-    # judge.problems.init()
+    # judge.judge_apis.init()
     # web.users.init()
     app.secret_key = 'zqhf_ojserver'
     app.run(

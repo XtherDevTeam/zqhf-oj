@@ -603,23 +603,17 @@ def index_of_api():
                 return {'status': 'error', 'reason': 'problem not exist'}
             with open('tmp/temp.' + content['ext'], 'w+') as file:
                 file.write(content['code'])
-            
-            problem = judge.judge_apis.get_problem(int(content['pid']))
-            
             task_id = judge.judge_apis.submit(
                 web.config.get_config_value("judge-server-host"),
                 web.config.get_config_value("judge-server-port"),
-                content['lang'], 
-                urllib.parse.unquote(io_file[0]),
+                content['lang'], urllib.parse.unquote(io_file[0]),
                 urllib.parse.unquote(io_file[1]),
-                problem['time_limit'],
-                problem['mem_limit'],
                 {
                     'source_file': 'temp.' + content['ext'],
                     'binary_file': 'temp.bin'
                 },
                 flask.session.get('username'),
-                content['pid'],
+                content['pid']
             )
             return {'status': 'success', 'task_id': task_id}
         

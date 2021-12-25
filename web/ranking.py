@@ -10,7 +10,7 @@ def init():
 
 # rerank all users
 def init_ranking_table():
-    database.client.table_operate('oj_ranking','new')
+    database.client.table_operate('oj_ranking','new@list')
     users = database.client.table_operate('oj_users','all')
     if users[0] == 'FAIL': return users
     else: users = users[1]['data']

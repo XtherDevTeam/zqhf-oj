@@ -1,7 +1,7 @@
-import threading
+import threading,judge.judge_apis
 import os,time
 from sys import stdout
-import judge.plugins,traceback
+import judge.judge_apis,traceback
 
 problems = None
 status = ['']
@@ -15,7 +15,7 @@ def push_task(use_plugin:str,input:str,output:str,source:str,binary:str,author:s
     return judge.records.get_record_count()
 
 def task_processor():
-    # judge.plugins.load_plugins_list()
+    # judge.judge_apis.load_plugins_list()
     while True:
         try:
             global status_queue_prefix
@@ -26,12 +26,12 @@ def task_processor():
             now_item = queue[-1]
             queue.pop()
             status[status_queue_prefix] = 'compiling'
-            problem_details = judge.problems.get_problem(now_item[6])
+            problem_details = judge.judge_apis.get_problem(now_item[6])
             if problem_details == None:
                 print('invalid problem!', type(now_item[6]))
                 continue
             print('time-limit:' , problem_details['time_limit'], 'memory-limit:', problem_details['mem_limit'])
-            execute_result = judge.plugins.execute_plugin(
+            execute_result = judge.judge_apis.execute_plugin(
                 now_item[0],
                 now_item[1],
                 { 'source_file':now_item[2],'binary_file':now_item[3] },
@@ -76,7 +76,7 @@ def task_processor():
 
 def init():
     global tasks
-    judge.plugins.load_plugins_list()
+    judge.judge_apis.load_plugins_list()
     process = threading.Thread(target=task_processor)
     process.start()
     print('judge task runner started')

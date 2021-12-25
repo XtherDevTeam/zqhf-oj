@@ -5,6 +5,8 @@
     "server-port": 5914,
     "contest-server-host": "0.0.0.0",
     "contest-server-port": 5915,
+    "judge-server-host": "0.0.0.0",
+    "judge-server-port": 5918,
     "invite-code": "zqhf",
     "use-judge-plugins": [
         "C",
