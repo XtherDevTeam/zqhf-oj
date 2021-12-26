@@ -42,11 +42,8 @@ def get_judge_file(pid:int):
     if data[0]== 'FAIL': return None
     else:
         pid = str(pid)
-        result = []
-        with open('judge/judge_files/' + pid + '.in','r+') as file:
-            result.append(urllib.parse.quote(file.read()))
-        with open('judge/judge_files/' + pid + '.out','r+') as file:
-            result.append(urllib.parse.quote(file.read()))
+        c = get_problem(pid)
+        result = [c['input'], c['output']]
         return result
 
 def edit_problem(pid:int,problem_infomation:dict):
@@ -62,15 +59,6 @@ def new_problem(problem_infomation:dict):
 def remove_problem(pid:int):
     database.client.item_operate('oj_problems',pid,'delete')
     infomation = database.client.table_operate('oj_problems','info')
-    cnt = get_problems_count()
-    os.remove('judge/judge_files/' + str(pid) + '.in')
-    os.remove('judge/judge_files/' + str(pid) + '.out')
-    for i in range(pid+1,cnt):
-        if i == cnt - 1: 
-            database.client.item_operate('oj_problems',i,'delete')
-            break
-        os.rename('judge/judge_files/' + str(i) + '.in','judge/judge_files/' + str(i-1) + '.in')
-        os.rename('judge/judge_files/' + str(i) + '.out','judge/judge_files/' + str(i-1) + '.out')
 
     if infomation[0] == 'FAIL': return None
     return infomation[1]['total_data_cnt'] - 1
@@ -119,11 +107,15 @@ def get_problems_per_page(prefix:int,count:int):
 def createJudgeFile(pid:int,input:str,output:str):
     if pid >= get_problems_count():
         return False
-    pid = str(pid)
-    with open('judge/judge_files/' + pid + '.in','w+') as file:
-        file.write(input)
-    with open('judge/judge_files/' + pid + '.out','w+') as file:
-        file.write(output)
+    # pid = str(pid)
+    # with open('judge/judge_files/' + pid + '.in','w+') as file:
+    #     file.write(input)
+    # with open('judge/judge_files/' + pid + '.out','w+') as file:
+    #     file.write(output)
+    n = get_problem(pid)
+    n['input'] = input
+    n['output'] = output
+    edit_problem(pid, n)
     return True
 
 def get_match_tags_problems(tag:str):

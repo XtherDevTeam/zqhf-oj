@@ -596,11 +596,7 @@ def index_of_api():
             if content == None:
                 return {'status': 'error', 'reason': 'invalid json format'}
             content = json.loads(content)
-            # print('submit get',content)
-            io_file = judge.judge_apis.get_judge_file(
-                int(content['pid']))  # 0-> in, 1-> out
-            if io_file == None:
-                return {'status': 'error', 'reason': 'problem not exist'}
+            
             with open('tmp/temp.' + content['ext'], 'w+') as file:
                 file.write(content['code'])
             
@@ -610,8 +606,8 @@ def index_of_api():
                 web.config.get_config_value("judge-server-host"),
                 web.config.get_config_value("judge-server-port"),
                 content['lang'], 
-                urllib.parse.unquote(io_file[0]),
-                urllib.parse.unquote(io_file[1]),
+                urllib.parse.unquote(problem['input']),
+                urllib.parse.unquote(problem['output']),
                 problem['time_limit'],
                 problem['mem_limit'],
                 {
