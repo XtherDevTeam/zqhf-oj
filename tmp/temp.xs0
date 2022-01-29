@@ -1,0 +1,3 @@
+import "io/io.xs0";
+
+io.print("Hello,world!");

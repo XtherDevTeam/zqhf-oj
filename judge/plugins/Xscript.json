@@ -1,0 +1,8 @@
+{
+    "name": "Xscript",
+    "file-type": "text/x-csrc",
+    "file-ext": "xs0",
+    "descriptions": "Xscript 0.5.1",
+    "compile_command": "/home/chou/.xther/Xscript/xscript -l/home/chou/.xther/Xscript/lib,lib,. --compile --file $source_file --output $binary_file",
+    "exec_command": "/home/chou/.xther/Xscript/xscript -l/home/chou/.xther/Xscript/lib,lib,. --load-object --file $binary_file --run"
+}

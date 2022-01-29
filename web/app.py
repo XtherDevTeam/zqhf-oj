@@ -146,7 +146,7 @@ def index():
                 flask.session.get('username'))},
             board=board,
             rankingTop10=web.ranking.get_rankings_per_page(0),
-            is_logined = logined
+            is_logined=logined
         )
     )
 
@@ -172,12 +172,13 @@ def index_of_problem_lists():
         )
     )
 
+
 @app.route('/user-image', methods=["GET"])
 def index_of_user_image_main():
     logined = (flask.session.get('username') != None)
-    
+
     userimg_cnt = web.image.get_images_count(flask.session.get('username'))
-    
+
     return createRootTemplate(
         '我的图床',
         flask.render_template(
@@ -185,9 +186,10 @@ def index_of_user_image_main():
             config_file=web.config.configf,
             user={'name': flask.session.get('username'), 'item': web.users.get_user_item(
                 flask.session.get('username'))},
-            userimg_cnt = userimg_cnt
+            userimg_cnt=userimg_cnt
         )
     )
+
 
 @app.route('/user-image/upload', methods=["POST"])
 def index_of_image_upload():
@@ -197,29 +199,32 @@ def index_of_image_upload():
     dest = io.BytesIO()
     img.save(dest)
     dest.seek(0)
-    web.image.new_image(flask.session['username'],dest.read())
+    web.image.new_image(flask.session['username'], dest.read())
     dest.close()
     del dest
     return flask.redirect('/user-image')
 
+
 @app.route('/user-image/<int:imgid>/delete', methods=["GET"])
-def index_of_user_image_delete(imgid:int):
+def index_of_user_image_delete(imgid: int):
     logined = (flask.session.get('username') != None)
-    
+
     username = flask.session['username']
-    if web.image.remove_image(username,imgid) == False: return {'status':'error', 'reason': 'remove_image(username,imgid) failed.'}
-    return {'status':'success'}
+    if web.image.remove_image(username, imgid) == False: return {'status': 'error', 'reason': 'remove_image(username,imgid) failed.'}
+    return {'status': 'success'}
+
 
 @app.route('/user-image/<username>/<int:imgid>', methods=["GET"])
-def index_of_user_image_response(username:str,imgid:int):
-    img = web.image.get_image(username,imgid)
+def index_of_user_image_response(username: str, imgid: int):
+    img = web.image.get_image(username, imgid)
     if img == False:
         return {
             'status': 'error',
             'reason': 'get_image(username,imgid) failed.'
         }
-    response = flask.Response(img,mimetype='image/jpeg')
+    response = flask.Response(img, mimetype='image/jpeg')
     return response
+
 
 @app.route('/lists/post', methods=["GET"])
 def index_of_problem_list_post():
@@ -546,7 +551,7 @@ def index_of_api():
                     flask.session.get('username'), userinfo['descriptions'])
             os.remove('./tmp/userimg.jpeg')
             return flask.redirect('/user/self')
-        
+
         if(request_item == 'updateUserSpace'):
             fill = web.users.get_user_item(flask.session['username'])[
                 'descriptions']
@@ -556,7 +561,7 @@ def index_of_api():
                 flask.session.get('username'), fill)
             # print(web.users.get_user_item(flask.session.get('username')))
             return {'status': 'success'}
-        
+
         elif(request_item == 'postProblem'):
             problem = flask.request.form.get('problem_json')
             if problem == None:
@@ -567,7 +572,7 @@ def index_of_api():
             judge.judge_apis.createJudgeFile(
                 pid, problem["input"], problem["output"])
             return {'status': 'success'}
-        
+
         elif(request_item == 'editProblem'):
             problem = flask.request.form.get('problem_json')
             if problem == None:
@@ -579,7 +584,7 @@ def index_of_api():
             judge.judge_apis.createJudgeFile(
                 pid, problem["input"], problem["output"])
             return {'status': 'success'}
-        
+
         elif(request_item == 'editNote'):
             note_content = json.loads(flask.request.form.get('json'))['info']
             id = flask.request.form.get('action')
@@ -590,22 +595,22 @@ def index_of_api():
                 web.notebook.edit_user_note(
                     flask.session['username'], int(id), note_content)
             return {'status': 'success'}
-        
+
         elif(request_item == 'submitAnswer'):
             content = flask.request.form.get('json')
             if content == None:
                 return {'status': 'error', 'reason': 'invalid json format'}
             content = json.loads(content)
-            
+
             with open('tmp/temp.' + content['ext'], 'w+') as file:
                 file.write(content['code'])
-            
+
             problem = judge.judge_apis.get_problem(int(content['pid']))
-            
+
             task_id = judge.judge_apis.submit(
                 web.config.get_config_value("judge-server-host"),
                 web.config.get_config_value("judge-server-port"),
-                content['lang'], 
+                content['lang'],
                 urllib.parse.unquote(problem['input']),
                 urllib.parse.unquote(problem['output']),
                 problem['time_limit'],
@@ -618,7 +623,7 @@ def index_of_api():
                 content['pid'],
             )
             return {'status': 'success', 'task_id': task_id}
-        
+
         elif(request_item == 'postBulletin'):
             bulletin = flask.request.form.get('problem_json')
             if bulletin == None:
@@ -851,6 +856,9 @@ def index_of_edit_problem():
             )
         )
     pid = int(pid)
+    m_judge_file = judge.judge_apis.get_judge_file(pid)
+    m_judge_file[0] = urllib.parse.quote(m_judge_file[0])
+    m_judge_file[1] = urllib.parse.quote(m_judge_file[1])
     return createRootTemplate(
         '修改题目',
         flask.render_template(
@@ -859,7 +867,7 @@ def index_of_edit_problem():
             problem_id=pid,
             origin=judge.judge_apis.get_problem(pid),
             tags=json.dumps(judge.judge_apis.get_problem(pid)["tags"]),
-            judge_file=judge.judge_apis.get_judge_file(pid),
+            judge_file=m_judge_file,
             input_examples=json.dumps(
                 judge.judge_apis.get_problem(pid)["input_example"]),
             output_examples=json.dumps(
@@ -868,9 +876,9 @@ def index_of_edit_problem():
     )
 
 
-@app.route('/problems/<pid>', methods=["GET"])
+@ app.route('/problems/<pid>', methods = ["GET"])
 def index_of_problem(pid: str):
-    pid = int(pid)
+    pid=int(pid)
     if pid > judge.judge_apis.get_problems_count():
         return createRootTemplate(
             '错误',

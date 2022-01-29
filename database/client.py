@@ -91,9 +91,9 @@ def table_operate(tab:str,operation:str,data:dict = {}):
     else: return ('FAIL',recv_data)
 
 def close_connection(client:str):
-    session = pickle.loads(requests.get(
+    pickle.loads(requests.get(
         "http://" + config.global_config.global_config['database-server-host'] + ":" + str(config.global_config.global_config['database-server-port']) + \
         "/" + client + "/logout"
-    ).content)['data']
-    print("normal session", session)
+    ).content)
+    print("Connection closed", session)
     return session
