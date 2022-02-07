@@ -602,15 +602,13 @@ def index_of_api():
                 return {'status': 'error', 'reason': 'invalid json format'}
             content = json.loads(content)
 
-            with open('tmp/temp.' + content['ext'], 'w+') as file:
-                file.write(content['code'])
-
             problem = judge.judge_apis.get_problem(int(content['pid']))
 
             task_id = judge.judge_apis.submit(
                 web.config.get_config_value("judge-server-host"),
                 web.config.get_config_value("judge-server-port"),
                 content['lang'],
+                content['code'],
                 urllib.parse.unquote(problem['input']),
                 urllib.parse.unquote(problem['output']),
                 problem['time_limit'],

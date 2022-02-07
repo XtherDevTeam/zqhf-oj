@@ -94,6 +94,9 @@ def submit_judge():
     pickleData.seek(0)
     data = pickle.loads(pickleData.read())
     pickleData.close()
+    with open('tmp/' + data['env_variables']['source_file'], 'w+') as file:
+        file.write(data['source_file'])
+        
     result_data = execute_plugin(data['plugin'], data['input'], data['env_variables'], data['time_limit'], data['mem_limit'])
     return checker({
         'status': result_data[0],

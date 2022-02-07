@@ -1,7 +1,2 @@
 import "io/io.xs0";
-
-var a = toInt(io.input());
-
-var b = toInt(io.input());
-
-io.print(a+b);
+io.print("Konnichiha, Sekai");

@@ -182,7 +182,7 @@ def push_record(info:list, jid:int):
             web.ranking.init_ranking_table()
     return jid
 
-def submit(judgeServerHost, judgeServerPort, judgePlugin, input, output, time_limit, mem_limit, env_variables, author, pid):
+def submit(judgeServerHost, judgeServerPort, judgePlugin, source_file, input, output, time_limit, mem_limit, env_variables, author, pid):
     jid = create_executing_task_record(['Judging', 'Please wait...', author, pid])
     
     packed_data = io.BytesIO(pickle.dumps(
@@ -192,7 +192,8 @@ def submit(judgeServerHost, judgeServerPort, judgePlugin, input, output, time_li
             'output': output,
             'time_limit': time_limit,
             'mem_limit': mem_limit,
-            'env_variables': env_variables
+            'env_variables': env_variables,
+            'source_file': source_file
         }
     ))
     recv_data = json.loads(requests.get("http://%s:%d/submit" % (judgeServerHost, judgeServerPort), files={'data': packed_data}).content)
