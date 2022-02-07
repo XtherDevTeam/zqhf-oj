@@ -1,5 +1,3 @@
 *.pyc
-*.in
-*.out
-.db
-test.*
+*.json
+*.db

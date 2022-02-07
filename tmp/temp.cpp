@@ -1,8 +1,7 @@
-#include <bits/stdc++.h>
+#include <iostream>
+
 using namespace std;
-char a[114514];
+
 int main(){
-	scanf("%s", a);
-  	printf("%s", a);
-	return 0;
+  cout << "Hello,world!";
 }

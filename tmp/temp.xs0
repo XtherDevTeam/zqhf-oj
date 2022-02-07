@@ -1,3 +1,7 @@
 import "io/io.xs0";
 
-io.print("Hello,world!");
+var a = toInt(io.input());
+
+var b = toInt(io.input());
+
+io.print(a+b);
